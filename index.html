@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Home — Керування світлом</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --border: #2a2a38;
+      --accent: #f5c400;
+      --accent-dim: rgba(245,196,0,0.12);
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --green: #1dbd8a;
+      --red: #e24b4a;
+      --mono: 'Space Mono', monospace;
+      --display: 'Syne', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--display);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(245,196,0,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .wrap { width: 100%; max-width: 360px; }
+
+    header { text-align: center; margin-bottom: 2.5rem; }
+    header .label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    header h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    header h1 span { color: var(--accent); }
+
+    .conn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      margin-top: 0.75rem;
+      transition: all 0.3s;
+    }
+    .conn.connected { border-color: var(--green); color: var(--green); }
+    .conn.error { border-color: var(--red); color: var(--red); }
+    .conn-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .conn.connecting .conn-dot { animation: blink 1s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    .bulb-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      transition: border-color 0.4s;
+      position: relative;
+      overflow: hidden;
+    }
+    .bulb-wrap.on {
+      border-color: rgba(245,196,0,0.4);
+    }
+    .bulb-wrap::before {
+      content: '';
+      position: absolute;
+      top: -40px; left: 50%; transform: translateX(-50%);
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0;
+      filter: blur(60px);
+      transition: opacity 0.5s;
+      pointer-events: none;
+    }
+    .bulb-wrap.on::before { opacity: 0.18; }
+
+    .bulb-svg { width: 90px; height: 90px; margin: 0 auto 1.25rem; display: block; }
+    .bulb-body { transition: fill 0.4s; fill: #2a2a38; }
+    .bulb-glow { transition: opacity 0.4s; opacity: 0; }
+    .on .bulb-body { fill: var(--accent); }
+    .on .bulb-glow { opacity: 1; }
+
+    .state-label {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.25rem;
+    }
+    .state-sub {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+    .btn {
+      padding: 14px 0;
+      font-family: var(--display);
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--surface);
+      color: var(--muted);
+      letter-spacing: 0.01em;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-on:not(:disabled):hover { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+    .btn-off:not(:disabled):hover { background: rgba(255,255,255,0.05); border-color: #555; color: var(--text); }
+    .btn:not(:disabled):active { transform: scale(0.96); }
+    .btn-on:not(:disabled) { border-color: rgba(245,196,0,0.3); color: var(--accent); }
+
+    .log {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      min-height: 90px;
+      max-height: 130px;
+      overflow-y: auto;
+    }
+    .log-line { padding: 2px 0; }
+    .log-line.ok { color: var(--green); }
+    .log-line.err { color: var(--red); }
+
+    footer {
+      margin-top: 2rem;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="label">IoT Project — Smart Home</div>
+      <h1>Smart <span>Light</span></h1>
+      <div class="conn connecting" id="conn">
+        <span class="conn-dot"></span>
+        <span id="conn-text">підключення...</span>
+      </div>
+    </header>
+
+    <div class="bulb-wrap" id="bulb-wrap">
+      <svg class="bulb-svg" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="45" cy="38" r="26" class="bulb-body" />
+        <circle cx="45" cy="38" r="26" class="bulb-glow" fill="var(--accent)" opacity="0.35"/>
+        <rect x="33" y="62" width="24" height="5" rx="2" fill="#444"/>
+        <rect x="35" y="69" width="20" height="5" rx="2" fill="#444"/>
+        <rect x="37" y="76" width="16" height="5" rx="3" fill="#555"/>
+        <line x1="45" y1="12" x2="45" y2="4" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" class="bulb-glow"/>
+        <line x1="63" y1="20" x2="69" y2="14" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" class="bulb-glow"/>
+        <line x1="27" y1="20" x2="21" y2="14" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" class="bulb-glow"/>
+        <line x1="69" y1="38" x2="77" y2="38" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" class="bulb-glow"/>
+        <line x1="21" y1="38" x2="13" y2="38" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" class="bulb-glow"/>
+      </svg>
+      <div class="state-label" id="state-label">Вимкнено</div>
+      <div class="state-sub" id="state-sub">очікування підключення</div>
+    </div>
+
+    <div class="btns">
+      <button class="btn btn-on" id="btn-on" onclick="sendCmd('ON')" disabled>💡 Увімкнути</button>
+      <button class="btn btn-off" id="btn-off" onclick="sendCmd('OFF')" disabled>✕ Вимкнути</button>
+    </div>
+
+    <div class="log" id="log"><div class="log-line">Ініціалізація...</div></div>
+
+    <footer>MQTT · broker.hivemq.com · smarthome/light/yulia</footer>
+  </div>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+    const TOPIC = 'smarthome/light/yulia';
+    const CLIENT_ID = 'WebPanel_' + Math.random().toString(16).slice(2,8);
+    let client, lightOn = false;
+
+    function log(msg, cls) {
+      const el = document.getElementById('log');
+      const d = new Date();
+      const t = [d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2,'0')).join(':');
+      const line = document.createElement('div');
+      line.className = 'log-line' + (cls ? ' ' + cls : '');
+      line.textContent = '[' + t + '] ' + msg;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function setConn(state, txt) {
+      const el = document.getElementById('conn');
+      el.className = 'conn ' + state;
+      document.getElementById('conn-text').textContent = txt;
+    }
+
+    function setLight(on) {
+      lightOn = on;
+      const wrap = document.getElementById('bulb-wrap');
+      wrap.className = 'bulb-wrap' + (on ? ' on' : '');
+      document.getElementById('state-label').textContent = on ? 'Увімкнено' : 'Вимкнено';
+      document.getElementById('state-sub').textContent = on ? 'LED горить на ESP32' : 'LED вимкнений';
+    }
+
+    function sendCmd(cmd) {
+      if (!client || !client.connected) { log('Не підключено', 'err'); return; }
+      client.publish(TOPIC, cmd, { qos: 0, retain: false }, err => {
+        if (err) log('Помилка: ' + err, 'err');
+        else { log('Відправлено: ' + cmd, 'ok'); setLight(cmd === 'ON'); }
+      });
+    }
+
+    function connect() {
+      setConn('connecting', 'підключення...');
+      log('Підключення до broker.hivemq.com...');
+      client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
+        clientId: CLIENT_ID, clean: true, connectTimeout: 8000, reconnectPeriod: 3000
+      });
+      client.on('connect', () => {
+        setConn('connected', 'підключено');
+        log('Підключено! Топік: ' + TOPIC, 'ok');
+        document.getElementById('btn-on').disabled = false;
+        document.getElementById('btn-off').disabled = false;
+        document.getElementById('state-sub').textContent = 'готово до керування';
+        client.subscribe(TOPIC);
+      });
+      client.on('message', (_, payload) => {
+        const msg = payload.toString();
+        log('Отримано: ' + msg);
+        setLight(msg === 'ON');
+      });
+      client.on('error', err => { setConn('error', 'помилка'); log('Помилка: ' + err.message, 'err'); });
+      client.on('reconnect', () => { setConn('connecting', 'перепідключення...'); log('Перепідключення...'); });
+    }
+
+    connect();
+  </script>
+</body>
+</html>
