@@ -1,278 +1,367 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smart Home — Керування світлом</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Light — Юлія</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0a0a0f;--surface:#13131a;--border:#2a2a38;
+      --accent:#f5c400;--accent-dim:rgba(245,196,0,0.12);
+      --text:#e8e8f0;--muted:#6b6b80;--green:#1dbd8a;--red:#e24b4a;
+      --mono:'Space Mono',monospace;--display:'Syne',sans-serif;
+    }
+    body{background:var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem}
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(245,196,0,.05) 0%,transparent 70%);pointer-events:none}
+    .wrap{width:100%;max-width:380px}
 
-    :root {
-      --bg: #0a0a0f;
-      --surface: #13131a;
-      --border: #2a2a38;
-      --accent: #f5c400;
-      --accent-dim: rgba(245,196,0,0.12);
-      --text: #e8e8f0;
-      --muted: #6b6b80;
-      --green: #1dbd8a;
-      --red: #e24b4a;
-      --mono: 'Space Mono', monospace;
-      --display: 'Syne', sans-serif;
-    }
+    header{text-align:center;margin-bottom:2rem}
+    .label{font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:.4rem}
+    h1{font-size:28px;font-weight:800;letter-spacing:-.02em}
+    h1 span{color:var(--accent)}
+    .conn{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:999px;border:1px solid var(--border);color:var(--muted);margin-top:.6rem;transition:all .3s}
+    .conn.connected{border-color:var(--green);color:var(--green)}
+    .conn.error{border-color:var(--red);color:var(--red)}
+    .conn-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+    .conn.connecting .conn-dot{animation:blink 1s infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--display);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1rem;
-    }
+    .bulb-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem 1.25rem;text-align:center;margin-bottom:1.25rem;transition:border-color .4s;position:relative;overflow:hidden}
+    .bulb-card.on{border-color:rgba(245,196,0,.4)}
+    .bulb-svg{width:76px;height:76px;margin:0 auto .75rem;display:block}
+    .bulb-body{transition:fill .4s;fill:#2a2a38}
+    .bulb-glow{transition:opacity .4s;opacity:0}
+    .on .bulb-body{fill:var(--accent)}
+    .on .bulb-glow{opacity:1}
+    .state-lbl{font-size:20px;font-weight:700;margin-bottom:.25rem;display:flex;align-items:center;justify-content:center;gap:10px}
+    .color-dot{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.15);transition:background .2s;flex-shrink:0}
+    .state-sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
 
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(245,196,0,0.06) 0%, transparent 70%);
-      pointer-events: none;
-    }
+    .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.25rem}
+    .btn{padding:13px 0;font-family:var(--display);font-size:14px;font-weight:700;border-radius:12px;border:1px solid var(--border);cursor:pointer;transition:all .15s;background:var(--surface);color:var(--muted)}
+    .btn:disabled{opacity:.35;cursor:not-allowed}
+    .btn-on:not(:disabled){border-color:rgba(245,196,0,.35);color:var(--accent)}
+    .btn-on:not(:disabled):hover{background:var(--accent-dim)}
+    .btn-off:not(:disabled):hover{background:rgba(255,255,255,.05);color:var(--text)}
+    .btn:not(:disabled):active{transform:scale(.96)}
 
-    .wrap { width: 100%; max-width: 360px; }
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-bottom:1rem}
+    .card-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
 
-    header { text-align: center; margin-bottom: 2.5rem; }
-    header .label {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 0.5rem;
-    }
-    header h1 {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--text);
-    }
-    header h1 span { color: var(--accent); }
+    /* Rainbow hue slider */
+    .hue-wrap{margin-bottom:1rem}
+    .hue-wrap label{font-size:13px;color:var(--muted);display:block;margin-bottom:.5rem}
+    .hue-track{position:relative;height:28px;border-radius:14px;background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);cursor:pointer;border:1px solid rgba(255,255,255,.1)}
+    .hue-thumb{position:absolute;top:50%;width:24px;height:24px;border-radius:50%;border:3px solid #fff;transform:translate(-50%,-50%);box-shadow:0 0 0 2px rgba(0,0,0,.4);transition:left .05s;pointer-events:none}
 
-    .conn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 4px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      margin-top: 0.75rem;
-      transition: all 0.3s;
-    }
-    .conn.connected { border-color: var(--green); color: var(--green); }
-    .conn.error { border-color: var(--red); color: var(--red); }
-    .conn-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-    .conn.connecting .conn-dot { animation: blink 1s infinite; }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    /* Saturation slider */
+    .sat-wrap{margin-bottom:1rem}
+    .sat-wrap label{font-size:13px;color:var(--muted);display:block;margin-bottom:.5rem}
+    .sat-track{position:relative;height:20px;border-radius:10px;cursor:pointer;border:1px solid rgba(255,255,255,.1)}
+    .sat-thumb{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;border:2px solid #fff;transform:translate(-50%,-50%);box-shadow:0 0 0 2px rgba(0,0,0,.4);pointer-events:none}
 
-    .bulb-wrap {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 2.5rem 1.5rem;
-      text-align: center;
-      margin-bottom: 1.5rem;
-      transition: border-color 0.4s;
-      position: relative;
-      overflow: hidden;
-    }
-    .bulb-wrap.on {
-      border-color: rgba(245,196,0,0.4);
-    }
-    .bulb-wrap::before {
-      content: '';
-      position: absolute;
-      top: -40px; left: 50%; transform: translateX(-50%);
-      width: 200px; height: 200px;
-      border-radius: 50%;
-      background: var(--accent);
-      opacity: 0;
-      filter: blur(60px);
-      transition: opacity 0.5s;
-      pointer-events: none;
-    }
-    .bulb-wrap.on::before { opacity: 0.18; }
+    .row{display:flex;align-items:center;gap:10px;margin-bottom:.85rem}
+    .row:last-child{margin-bottom:0}
+    .row label{font-size:13px;color:var(--muted);width:90px;flex-shrink:0}
+    .row input[type=range]{flex:1;accent-color:var(--accent)}
+    .row .val{font-family:var(--mono);font-size:12px;color:var(--text);width:48px;text-align:right;flex-shrink:0}
 
-    .bulb-svg { width: 90px; height: 90px; margin: 0 auto 1.25rem; display: block; }
-    .bulb-body { transition: fill 0.4s; fill: #2a2a38; }
-    .bulb-glow { transition: opacity 0.4s; opacity: 0; }
-    .on .bulb-body { fill: var(--accent); }
-    .on .bulb-glow { opacity: 1; }
+    .color-preview-big{width:48px;height:48px;border-radius:12px;border:2px solid rgba(255,255,255,.15);flex-shrink:0;transition:background .2s}
 
-    .state-label {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      margin-bottom: 0.25rem;
-    }
-    .state-sub {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--muted);
-    }
+    .pir-row{display:flex;align-items:center;justify-content:space-between}
+    .pir-row .pir-text span{font-size:14px;color:var(--text)}
+    .pir-row .pir-text small{font-size:12px;color:var(--muted);display:block;margin-top:2px}
+    .toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+    .toggle input{opacity:0;width:0;height:0}
+    .slider-tog{position:absolute;inset:0;background:#2a2a38;border-radius:999px;cursor:pointer;transition:.3s;border:1px solid var(--border)}
+    .slider-tog::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:var(--muted);border-radius:50%;transition:.3s}
+    .toggle input:checked+.slider-tog{background:var(--accent-dim);border-color:rgba(245,196,0,.4)}
+    .toggle input:checked+.slider-tog::before{transform:translateX(20px);background:var(--accent)}
+    .pir-status{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:.6rem}
+    .pir-status.active{color:var(--green)}
 
-    .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
-    .btn {
-      padding: 14px 0;
-      font-family: var(--display);
-      font-size: 15px;
-      font-weight: 700;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: all 0.15s;
-      background: var(--surface);
-      color: var(--muted);
-      letter-spacing: 0.01em;
-    }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-on:not(:disabled):hover { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-    .btn-off:not(:disabled):hover { background: rgba(255,255,255,0.05); border-color: #555; color: var(--text); }
-    .btn:not(:disabled):active { transform: scale(0.96); }
-    .btn-on:not(:disabled) { border-color: rgba(245,196,0,0.3); color: var(--accent); }
+    .log{background:#0d0d13;border:1px solid var(--border);border-radius:12px;padding:.75rem;font-family:var(--mono);font-size:11px;color:var(--muted);min-height:72px;max-height:110px;overflow-y:auto;margin-bottom:1rem}
+    .log-line.ok{color:var(--green)}
+    .log-line.err{color:var(--red)}
 
-    .log {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1rem;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--muted);
-      min-height: 90px;
-      max-height: 130px;
-      overflow-y: auto;
-    }
-    .log-line { padding: 2px 0; }
-    .log-line.ok { color: var(--green); }
-    .log-line.err { color: var(--red); }
+    footer{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;letter-spacing:.05em}
 
-    footer {
-      margin-top: 2rem;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      text-align: center;
-      letter-spacing: 0.05em;
-    }
+    .apply-btn{width:100%;padding:11px 0;font-size:13px;font-family:var(--display);font-weight:700;border-radius:10px;border:1px solid var(--border);cursor:pointer;background:var(--surface);color:var(--muted);transition:all .15s;margin-top:.75rem}
+    .apply-btn:not(:disabled):hover{background:var(--accent-dim);border-color:rgba(245,196,0,.35);color:var(--accent)}
+    .apply-btn:not(:disabled):active{transform:scale(.97)}
+    .apply-btn:disabled{opacity:.35;cursor:not-allowed}
+
+    .kelvin-labels{display:flex;justify-content:space-between;font-size:11px;margin-top:.35rem}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="label">IoT Project — Smart Home</div>
-      <h1>Smart <span>Light</span></h1>
-      <div class="conn connecting" id="conn">
-        <span class="conn-dot"></span>
-        <span id="conn-text">підключення...</span>
-      </div>
-    </header>
-
-    <div class="bulb-wrap" id="bulb-wrap">
-      <svg class="bulb-svg" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="45" cy="38" r="26" class="bulb-body" />
-        <circle cx="45" cy="38" r="26" class="bulb-glow" fill="var(--accent)" opacity="0.35"/>
-        <rect x="33" y="62" width="24" height="5" rx="2" fill="#444"/>
-        <rect x="35" y="69" width="20" height="5" rx="2" fill="#444"/>
-        <rect x="37" y="76" width="16" height="5" rx="3" fill="#555"/>
-        <line x1="45" y1="12" x2="45" y2="4" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" class="bulb-glow"/>
-        <line x1="63" y1="20" x2="69" y2="14" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" class="bulb-glow"/>
-        <line x1="27" y1="20" x2="21" y2="14" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" class="bulb-glow"/>
-        <line x1="69" y1="38" x2="77" y2="38" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" class="bulb-glow"/>
-        <line x1="21" y1="38" x2="13" y2="38" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" class="bulb-glow"/>
-      </svg>
-      <div class="state-label" id="state-label">Вимкнено</div>
-      <div class="state-sub" id="state-sub">очікування підключення</div>
+<div class="wrap">
+  <header>
+    <div class="label">IoT Project — Smart Home</div>
+    <h1>Smart <span>Light</span></h1>
+    <div class="conn connecting" id="conn">
+      <span class="conn-dot"></span>
+      <span id="conn-text">підключення...</span>
     </div>
+  </header>
 
-    <div class="btns">
-      <button class="btn btn-on" id="btn-on" onclick="sendCmd('ON')" disabled>💡 Увімкнути</button>
-      <button class="btn btn-off" id="btn-off" onclick="sendCmd('OFF')" disabled>✕ Вимкнути</button>
+  <!-- Bulb status -->
+  <div class="bulb-card" id="bulb-wrap">
+    <svg class="bulb-svg" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="45" cy="38" r="26" class="bulb-body"/>
+      <circle cx="45" cy="38" r="26" class="bulb-glow" fill="#f5c400" opacity="0.35"/>
+      <rect x="33" y="62" width="24" height="5" rx="2" fill="#444"/>
+      <rect x="35" y="69" width="20" height="5" rx="2" fill="#444"/>
+      <rect x="37" y="76" width="16" height="5" rx="3" fill="#555"/>
+      <line x1="45" y1="12" x2="45" y2="4" stroke="#f5c400" stroke-width="2" stroke-linecap="round" class="bulb-glow"/>
+      <line x1="63" y1="20" x2="69" y2="14" stroke="#f5c400" stroke-width="2" stroke-linecap="round" class="bulb-glow"/>
+      <line x1="27" y1="20" x2="21" y2="14" stroke="#f5c400" stroke-width="2" stroke-linecap="round" class="bulb-glow"/>
+    </svg>
+    <div class="state-lbl">
+      <span id="state-label">Вимкнено</span>
+      <div class="color-dot" id="color-dot" style="background:#2a2a38"></div>
     </div>
-
-    <div class="log" id="log"><div class="log-line">Ініціалізація...</div></div>
-
-    <footer>MQTT · broker.hivemq.com · smarthome/light/yulia</footer>
+    <div class="state-sub" id="state-sub">очікування підключення</div>
   </div>
 
-  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-  <script>
-    const TOPIC = 'smarthome/light/yulia';
-    const CLIENT_ID = 'WebPanel_' + Math.random().toString(16).slice(2,8);
-    let client, lightOn = false;
+  <!-- ON/OFF -->
+  <div class="btns">
+    <button class="btn btn-on" id="btn-on" disabled onclick="sendPower('on')">💡 Увімкнути</button>
+    <button class="btn btn-off" id="btn-off" disabled onclick="sendPower('off')">✕ Вимкнути</button>
+  </div>
 
-    function log(msg, cls) {
-      const el = document.getElementById('log');
-      const d = new Date();
-      const t = [d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2,'0')).join(':');
-      const line = document.createElement('div');
-      line.className = 'log-line' + (cls ? ' ' + cls : '');
-      line.textContent = '[' + t + '] ' + msg;
-      el.appendChild(line);
-      el.scrollTop = el.scrollHeight;
+  <!-- Color -->
+  <div class="card">
+    <div class="card-title">Колір</div>
+
+    <div class="hue-wrap">
+      <label>Відтінок</label>
+      <div class="hue-track" id="hueTrack">
+        <div class="hue-thumb" id="hueThumb" style="left:0%"></div>
+      </div>
+    </div>
+
+    <div class="sat-wrap">
+      <label>Насиченість</label>
+      <div class="sat-track" id="satTrack">
+        <div class="sat-thumb" id="satThumb" style="left:100%"></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <label>Яскравість</label>
+      <input type="range" min="0" max="100" value="100" step="1" id="sBr" oninput="onBrightChange()"/>
+      <div class="val" id="vBr">100%</div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;margin-top:.75rem">
+      <div class="color-preview-big" id="preview"></div>
+      <div style="flex:1">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:4px" id="rgb-hint">RGB: 255, 0, 0</div>
+        <button class="apply-btn" id="btn-color" disabled onclick="sendColor()">Застосувати колір</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kelvin -->
+  <div class="card">
+    <div class="card-title">Температура кольору</div>
+    <div class="row">
+      <label>Кельвін</label>
+      <input type="range" min="1000" max="10000" value="3000" step="100" id="sK" oninput="onKelvinChange()"/>
+      <div class="val" id="vK">3000K</div>
+    </div>
+    <div class="kelvin-labels">
+      <span style="color:#e08030">🕯 Тепле 1000K</span>
+      <span style="color:#aad0ff">❄ Холодне 10000K</span>
+    </div>
+    <button class="apply-btn" id="btn-kelvin" disabled onclick="sendKelvin()">Застосувати температуру</button>
+  </div>
+
+  <!-- PIR -->
+  <div class="card">
+    <div class="card-title">PIR сенсор</div>
+    <div class="pir-row">
+      <div class="pir-text">
+        <span>Автоматика руху</span>
+        <small>Вмикати при виявленні людини</small>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="pirToggle" checked onchange="sendPIR()" disabled/>
+        <span class="slider-tog"></span>
+      </label>
+    </div>
+    <div class="pir-status active" id="pir-status">PIR: очікування підключення...</div>
+  </div>
+
+  <div class="log" id="log"><div class="log-line">Ініціалізація...</div></div>
+  <footer>MQTT · broker.hivemq.com · smarthome/light/yulia</footer>
+</div>
+
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script>
+const TOPIC_CMD = 'smarthome/light/yulia/command';
+const TOPIC_STATUS = 'smarthome/light/yulia/status';
+const CLIENT_ID = 'WebPanel_' + Math.random().toString(16).slice(2,8);
+let mqttClient;
+
+// Color state
+let hue = 0, sat = 100, brightness = 100;
+
+function hsvToRgb(h, s, v) {
+  s /= 100; v /= 100;
+  const i = Math.floor(h / 60) % 6;
+  const f = h / 60 - Math.floor(h / 60);
+  const p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+  const [r,g,b] = [[v,t,p],[q,v,p],[p,v,t],[p,q,v],[t,p,v],[v,p,q]][i];
+  return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
+}
+
+function updateColorUI() {
+  const [r,g,b] = hsvToRgb(hue, sat, brightness);
+  const hex = '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+  document.getElementById('preview').style.background = hex;
+  document.getElementById('hueThumb').style.left = (hue/360*100).toFixed(1)+'%';
+  document.getElementById('hueThumb').style.background = `hsl(${hue},100%,50%)`;
+  // sat track gradient
+  const [rH,gH,bH] = hsvToRgb(hue, 100, brightness);
+  document.getElementById('satTrack').style.background =
+    `linear-gradient(to right, #888, rgb(${rH},${gH},${bH}))`;
+  document.getElementById('satThumb').style.left = sat+'%';
+  document.getElementById('satThumb').style.background = `hsl(${hue},${sat}%,${50+brightness/2*0.5}%)`;
+  document.getElementById('rgb-hint').textContent = `RGB: ${r}, ${g}, ${b}`;
+  document.getElementById('color-dot').style.background = hex;
+}
+
+// Hue drag
+function makeDrag(trackId, thumbId, onUpdate) {
+  const track = document.getElementById(trackId);
+  let dragging = false;
+  function getVal(e) {
+    const rect = track.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    return Math.max(0, Math.min(1, x / rect.width));
+  }
+  track.addEventListener('mousedown', e => { dragging = true; onUpdate(getVal(e)); });
+  track.addEventListener('touchstart', e => { dragging = true; onUpdate(getVal(e)); });
+  document.addEventListener('mousemove', e => { if(dragging) onUpdate(getVal(e)); });
+  document.addEventListener('touchmove', e => { if(dragging) onUpdate(getVal(e)); });
+  document.addEventListener('mouseup', () => { dragging = false; });
+  document.addEventListener('touchend', () => { dragging = false; });
+}
+
+makeDrag('hueTrack','hueThumb', v => { hue = Math.round(v*360); updateColorUI(); });
+makeDrag('satTrack','satThumb', v => { sat = Math.round(v*100); updateColorUI(); });
+
+function onBrightChange() {
+  brightness = +document.getElementById('sBr').value;
+  document.getElementById('vBr').textContent = brightness+'%';
+  updateColorUI();
+}
+
+function onKelvinChange() {
+  document.getElementById('vK').textContent = document.getElementById('sK').value+'K';
+}
+
+updateColorUI();
+
+// Log
+function log(msg, cls) {
+  const el = document.getElementById('log');
+  const d = new Date();
+  const t = [d.getHours(),d.getMinutes(),d.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':');
+  const line = document.createElement('div');
+  line.className = 'log-line'+(cls?' '+cls:'');
+  line.textContent = '['+t+'] '+msg;
+  el.appendChild(line); el.scrollTop = el.scrollHeight;
+}
+
+function setConn(state, txt) {
+  const el = document.getElementById('conn');
+  el.className = 'conn '+state;
+  document.getElementById('conn-text').textContent = txt;
+}
+
+function setLight(on, r, g, b) {
+  document.getElementById('bulb-wrap').className = 'bulb-card'+(on?' on':'');
+  document.getElementById('state-label').textContent = on ? 'Увімкнено' : 'Вимкнено';
+  document.getElementById('state-sub').textContent = on ? 'LED горить' : 'LED вимкнений';
+  if(r!==undefined) document.getElementById('color-dot').style.background='rgb('+r+','+g+','+b+')';
+}
+
+function publish(payload) {
+  if(!mqttClient||!mqttClient.connected){log('Не підключено','err');return;}
+  mqttClient.publish(TOPIC_CMD, JSON.stringify(payload), {qos:0,retain:false});
+}
+
+function sendPower(cmd) { publish({cmd}); log('Команда: '+cmd,'ok'); }
+
+function sendColor() {
+  const [r,g,b] = hsvToRgb(hue, sat, brightness);
+  publish({r,g,b,brightness});
+  log('Колір: rgb('+r+','+g+','+b+') яскравість:'+brightness+'%','ok');
+}
+
+function sendKelvin() {
+  const k = +document.getElementById('sK').value;
+  publish({kelvin:k});
+  log('Температура: '+k+'K','ok');
+}
+
+function sendPIR() {
+  const enabled = document.getElementById('pirToggle').checked;
+  publish({pirEnabled:enabled});
+  const el = document.getElementById('pir-status');
+  el.textContent = 'PIR: '+(enabled?'активний — реагує на рух':'вимкнений');
+  el.className = 'pir-status'+(enabled?' active':'');
+  log('PIR: '+(enabled?'увімкнено':'вимкнено'),'ok');
+}
+
+function enableControls() {
+  ['btn-on','btn-off','btn-color','btn-kelvin'].forEach(id=>document.getElementById(id).disabled=false);
+  document.getElementById('pirToggle').disabled=false;
+}
+
+function handleStatus(payload) {
+  try {
+    const d = JSON.parse(payload);
+    setLight(d.on, d.r, d.g, d.b);
+    if(d.brightness!==undefined){
+      document.getElementById('sBr').value=d.brightness;
+      document.getElementById('vBr').textContent=d.brightness+'%';
+      brightness=d.brightness; updateColorUI();
     }
-
-    function setConn(state, txt) {
-      const el = document.getElementById('conn');
-      el.className = 'conn ' + state;
-      document.getElementById('conn-text').textContent = txt;
+    if(d.pirEnabled!==undefined){
+      document.getElementById('pirToggle').checked=d.pirEnabled;
+      const el=document.getElementById('pir-status');
+      el.textContent='PIR: '+(d.pirEnabled?'активний':'вимкнений');
+      el.className='pir-status'+(d.pirEnabled?' active':'');
     }
+  } catch(e){ log('Статус: '+payload); }
+}
 
-    function setLight(on) {
-      lightOn = on;
-      const wrap = document.getElementById('bulb-wrap');
-      wrap.className = 'bulb-wrap' + (on ? ' on' : '');
-      document.getElementById('state-label').textContent = on ? 'Увімкнено' : 'Вимкнено';
-      document.getElementById('state-sub').textContent = on ? 'LED горить на ESP32' : 'LED вимкнений';
-    }
-
-    function sendCmd(cmd) {
-      if (!client || !client.connected) { log('Не підключено', 'err'); return; }
-      client.publish(TOPIC, cmd, { qos: 0, retain: false }, err => {
-        if (err) log('Помилка: ' + err, 'err');
-        else { log('Відправлено: ' + cmd, 'ok'); setLight(cmd === 'ON'); }
-      });
-    }
-
-    function connect() {
-      setConn('connecting', 'підключення...');
-      log('Підключення до broker.hivemq.com...');
-      client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
-        clientId: CLIENT_ID, clean: true, connectTimeout: 8000, reconnectPeriod: 3000
-      });
-      client.on('connect', () => {
-        setConn('connected', 'підключено');
-        log('Підключено! Топік: ' + TOPIC, 'ok');
-        document.getElementById('btn-on').disabled = false;
-        document.getElementById('btn-off').disabled = false;
-        document.getElementById('state-sub').textContent = 'готово до керування';
-        client.subscribe(TOPIC);
-      });
-      client.on('message', (_, payload) => {
-        const msg = payload.toString();
-        log('Отримано: ' + msg);
-        setLight(msg === 'ON');
-      });
-      client.on('error', err => { setConn('error', 'помилка'); log('Помилка: ' + err.message, 'err'); });
-      client.on('reconnect', () => { setConn('connecting', 'перепідключення...'); log('Перепідключення...'); });
-    }
-
-    connect();
-  </script>
+mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt',{
+  clientId:CLIENT_ID, clean:true, connectTimeout:8000, reconnectPeriod:3000
+});
+mqttClient.on('connect',()=>{
+  setConn('connected','підключено');
+  log('Підключено!','ok');
+  enableControls();
+  document.getElementById('state-sub').textContent='готово до керування';
+  document.getElementById('pir-status').textContent='PIR: активний — реагує на рух';
+  document.getElementById('pir-status').className='pir-status active';
+  mqttClient.subscribe(TOPIC_STATUS);
+  mqttClient.subscribe(TOPIC_CMD);
+});
+mqttClient.on('message',(topic,payload)=>{
+  const msg=payload.toString();
+  if(topic===TOPIC_STATUS) handleStatus(msg);
+  else log('Отримано: '+msg);
+});
+mqttClient.on('error',err=>{setConn('error','помилка');log('Помилка: '+err.message,'err');});
+mqttClient.on('reconnect',()=>{setConn('connecting','перепідключення...');log('Перепідключення...');});
+</script>
 </body>
 </html>
