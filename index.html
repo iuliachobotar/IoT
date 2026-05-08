@@ -278,13 +278,26 @@ function publish(topic, payload) {
 }
 
 function sendAll(cmd) {
+  const on = cmd === 'on';
+  lights.forEach(room => room.forEach(d => d.on = on));
   publish(TOPIC_ALL, {cmd});
-  addLog('Весь дім: '+(cmd==='on'?'увімкнено':'вимкнено'), 'ok');
+  updateAllUI();
+  const activePage = document.querySelector('.tab.active')?.dataset?.page;
+  if(activePage && activePage !== 'home') {
+    const ri = ROOMS.findIndex(r=>r.id===activePage);
+    if(ri>=0) buildRoomPage(ROOMS[ri], ri);
+  }
+  addLog('Весь дім: '+(on?'увімкнено':'вимкнено'), 'ok');
 }
 
 function sendRoomCmd(roomId, cmd) {
+  const on = cmd === 'on';
+  const ri = ROOMS.findIndex(r=>r.id===roomId);
+  if(ri>=0) lights[ri].forEach(d => d.on = on);
   publish(roomTopic(roomId), {cmd});
-  addLog(getRoomName(roomId)+': '+(cmd==='on'?'увімкнено':'вимкнено'), 'ok');
+  updateAllUI();
+  if(ri>=0) buildRoomPage(ROOMS[ri], ri);
+  addLog(getRoomName(roomId)+': '+(on?'увімкнено':'вимкнено'), 'ok');
 }
 
 function sendDevState(roomIdx, devIdx) {
@@ -293,6 +306,7 @@ function sendDevState(roomIdx, devIdx) {
   const devId = ['lamp','chandelier'][devIdx];
   const payload = {cmd: s.on?'on':'off', r:s.r, g:s.g, b:s.b, br:s.br};
   publish(devTopic(roomId, devId), payload);
+  updateAllUI();
 }
 
 function sendDevKelvin(roomIdx, devIdx, k) {
