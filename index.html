@@ -16,7 +16,6 @@
     body{background:var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;padding:1.5rem 1rem 3rem;}
     body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(245,196,0,0.05) 0%,transparent 70%);pointer-events:none;}
 
-    /* HEADER */
     header{text-align:center;margin-bottom:1.5rem;}
     .app-label{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:.4rem;}
     h1{font-size:24px;font-weight:800;letter-spacing:-.02em;}
@@ -28,47 +27,39 @@
     .conn.connecting .conn-dot{animation:blink 1s infinite;}
     @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-    /* BIG ALL-OFF BUTTON */
-    .all-off-wrap{max-width:400px;margin:0 auto 1.5rem;}
-    .all-off{
+    .all-wrap{max-width:400px;margin:0 auto 1.5rem;}
+    .all-btn{
       display:flex;flex-direction:column;align-items:center;justify-content:center;
       width:100%;padding:2rem 1rem 1.75rem;
       background:var(--surface);border:1px solid var(--border);border-radius:24px;
       cursor:pointer;transition:all .35s;gap:.4rem;position:relative;overflow:hidden;
     }
-    .all-off::before{
-      content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);
-      width:220px;height:220px;border-radius:50%;background:var(--accent);
-      opacity:0;filter:blur(70px);transition:opacity .5s;pointer-events:none;
-    }
-    .all-off:disabled{opacity:.45;cursor:not-allowed;}
-    .all-off:not(:disabled):hover{border-color:rgba(245,196,0,.3);}
-    .all-off:not(:disabled):active{transform:scale(.97);}
-    .all-off.lights-on{border-color:rgba(245,196,0,.45);background:rgba(245,196,0,.05);}
-    .all-off.lights-on::before{opacity:.15;}
+    .all-btn::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:220px;height:220px;border-radius:50%;background:var(--accent);opacity:0;filter:blur(70px);transition:opacity .5s;pointer-events:none;}
+    .all-btn:disabled{opacity:.45;cursor:not-allowed;}
+    .all-btn:not(:disabled):hover{border-color:rgba(245,196,0,.3);}
+    .all-btn:not(:disabled):active{transform:scale(.97);}
+    .all-btn.lights-on{border-color:rgba(245,196,0,.45);background:rgba(245,196,0,.05);}
+    .all-btn.lights-on::before{opacity:.15;}
     .bulb-body{fill:#2a2a38;transition:fill .4s;}
     .bulb-rays{opacity:0;transition:opacity .4s;}
-    .all-off.lights-on .bulb-body{fill:var(--accent);}
-    .all-off.lights-on .bulb-rays{opacity:1;}
-    .all-off-label{font-size:22px;font-weight:800;color:var(--text);margin-top:.25rem;}
-    .all-off-sub{font-family:var(--mono);font-size:11px;color:var(--muted);}
+    .all-btn.lights-on .bulb-body{fill:var(--accent);}
+    .all-btn.lights-on .bulb-rays{opacity:1;}
+    .all-label{font-size:22px;font-weight:800;color:var(--text);margin-top:.25rem;}
+    .all-sub{font-family:var(--mono);font-size:11px;color:var(--muted);}
 
-    /* TABS */
     .tabs{display:flex;gap:6px;max-width:400px;margin:0 auto 1.25rem;}
     .tab{flex:1;padding:8px 2px;font-family:var(--display);font-size:11px;font-weight:700;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .15s;text-align:center;}
     .tab.active{background:var(--accent-dim);border-color:rgba(245,196,0,.4);color:var(--accent);}
     .tab:hover:not(.active){color:var(--text);}
 
-    /* ROOM */
     .room{display:none;max-width:400px;margin:0 auto;}
     .room.active{display:block;}
     .room-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
     .room-title{font-size:18px;font-weight:800;}
-    .room-toggle{padding:8px 14px;font-family:var(--display);font-size:12px;font-weight:700;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .15s;}
-    .room-toggle.on{border-color:rgba(245,196,0,.4);color:var(--accent);}
-    .room-toggle:active{transform:scale(.96);}
+    .room-off{padding:8px 14px;font-family:var(--display);font-size:12px;font-weight:700;border-radius:10px;border:1px solid rgba(226,75,74,.3);background:rgba(226,75,74,.07);color:var(--red);cursor:pointer;transition:all .15s;}
+    .room-off:hover{background:rgba(226,75,74,.15);}
+    .room-off:active{transform:scale(.96);}
 
-    /* DEVICE CARD */
     .device{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:1.25rem;margin-bottom:1rem;transition:border-color .3s;}
     .device.on{border-color:rgba(245,196,0,.25);}
     .dev-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
@@ -76,7 +67,6 @@
     .dev-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .3s;flex-shrink:0;}
     .device.on .dev-dot{background:var(--accent);}
 
-    /* TOGGLE */
     .toggle{position:relative;width:40px;height:22px;cursor:pointer;flex-shrink:0;}
     .toggle input{opacity:0;width:0;height:0;}
     .toggle-slider{position:absolute;inset:0;background:#2a2a38;border-radius:999px;transition:.3s;}
@@ -84,46 +74,31 @@
     .toggle input:checked+.toggle-slider{background:rgba(245,196,0,.2);border:1px solid rgba(245,196,0,.4);}
     .toggle input:checked+.toggle-slider::before{transform:translateX(18px);background:var(--accent);}
 
-    /* COLOR BUTTONS */
     .section-label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;}
     .color-section{margin-bottom:.75rem;}
     .color-btns{display:flex;gap:6px;}
     .color-btn{flex:1;padding:10px 2px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);font-family:var(--display);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;color:var(--muted);}
     .color-btn:active{transform:scale(.95);}
 
-    /* WHITE TEMP */
-    .temp-warm{color:#ffb347;}
-    .temp-warm.active{border-color:#ffb347;background:rgba(255,179,71,.1);color:#ffb347;}
-    .temp-neutral{color:#e8e8f0;}
-    .temp-neutral.active{border-color:#aaa;background:rgba(255,255,255,.06);color:#fff;}
-    .temp-cold{color:#87ceeb;}
-    .temp-cold.active{border-color:#87ceeb;background:rgba(135,206,235,.1);color:#87ceeb;}
+    .temp-warm{color:#ffb347;}.temp-warm.active{border-color:#ffb347;background:rgba(255,179,71,.1);color:#ffb347;}
+    .temp-neutral{color:#e8e8f0;}.temp-neutral.active{border-color:#aaa;background:rgba(255,255,255,.06);color:#fff;}
+    .temp-cold{color:#87ceeb;}.temp-cold.active{border-color:#87ceeb;background:rgba(135,206,235,.1);color:#87ceeb;}
+    .col-r{color:#e24b4a;}.col-r.active{border-color:#e24b4a;background:rgba(226,75,74,.1);color:#e24b4a;}
+    .col-g{color:#1dbd8a;}.col-g.active{border-color:#1dbd8a;background:rgba(29,189,138,.1);color:#1dbd8a;}
+    .col-b{color:#4a9eff;}.col-b.active{border-color:#4a9eff;background:rgba(74,158,255,.1);color:#4a9eff;}
 
-    /* RGB COLOR */
-    .col-r{color:#e24b4a;}
-    .col-r.active{border-color:#e24b4a;background:rgba(226,75,74,.1);color:#e24b4a;}
-    .col-g{color:#1dbd8a;}
-    .col-g.active{border-color:#1dbd8a;background:rgba(29,189,138,.1);color:#1dbd8a;}
-    .col-b{color:#4a9eff;}
-    .col-b.active{border-color:#4a9eff;background:rgba(74,158,255,.1);color:#4a9eff;}
-
-    /* BRIGHTNESS */
     .bright-section{margin-top:.75rem;}
     .bright-row{display:flex;align-items:center;gap:10px;}
     .bright-val{font-family:var(--mono);font-size:11px;color:var(--muted);width:32px;text-align:right;}
     input[type=range]{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:#2a2a38;outline:none;cursor:pointer;}
     input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;}
 
-    /* PIR */
     .pir-row{display:flex;align-items:center;justify-content:space-between;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);}
     .pir-label{font-family:var(--mono);font-size:11px;color:var(--muted);}
 
-    /* LOG */
     .log-wrap{max-width:400px;margin:1.5rem auto 0;}
     .log{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.75rem;font-family:var(--mono);font-size:11px;color:var(--muted);max-height:100px;overflow-y:auto;}
-    .log-line{padding:1px 0;}
-    .log-line.ok{color:var(--green);}
-    .log-line.err{color:var(--red);}
+    .log-line{padding:1px 0;}.log-line.ok{color:var(--green);}.log-line.err{color:var(--red);}
   </style>
 </head>
 <body>
@@ -136,28 +111,25 @@
     </div>
   </header>
 
-  <!-- ВЕЛИКА КНОПКА -->
-  <div class="all-off-wrap">
-    <button class="all-off" id="btn-all-off" onclick="allOff()" disabled>
-      <svg width="64" height="72" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <div class="all-wrap">
+    <button class="all-btn" id="btn-all" onclick="toggleAll()" disabled>
+      <svg width="64" height="72" viewBox="0 0 64 72" fill="none">
         <circle cx="32" cy="26" r="20" class="bulb-body"/>
         <circle cx="32" cy="26" r="20" fill="#f5c400" opacity="0.3" class="bulb-rays"/>
         <rect x="22" y="45" width="20" height="5" rx="2.5" fill="#444"/>
         <rect x="24" y="52" width="16" height="5" rx="2.5" fill="#444"/>
         <rect x="26" y="59" width="12" height="5" rx="2.5" fill="#555"/>
-        <!-- промені -->
         <line x1="32" y1="3" x2="32" y2="0" stroke="#f5c400" stroke-width="2" stroke-linecap="round" class="bulb-rays"/>
         <line x1="50" y1="8" x2="52" y2="6" stroke="#f5c400" stroke-width="2" stroke-linecap="round" class="bulb-rays"/>
         <line x1="14" y1="8" x2="12" y2="6" stroke="#f5c400" stroke-width="2" stroke-linecap="round" class="bulb-rays"/>
         <line x1="57" y1="26" x2="60" y2="26" stroke="#f5c400" stroke-width="2" stroke-linecap="round" class="bulb-rays"/>
         <line x1="7" y1="26" x2="4" y2="26" stroke="#f5c400" stroke-width="2" stroke-linecap="round" class="bulb-rays"/>
       </svg>
-      <div class="all-off-label" id="all-off-label">Вимкнено</div>
-      <div class="all-off-sub" id="all-off-sub">очікування підключення</div>
+      <div class="all-label" id="all-label">Вимкнено</div>
+      <div class="all-sub" id="all-sub">очікування підключення</div>
     </button>
   </div>
 
-  <!-- ТАБИ -->
   <div class="tabs">
     <div class="tab active" onclick="showRoom(0)">🛋 Зал</div>
     <div class="tab" onclick="showRoom(1)">🍳 Кухня</div>
@@ -165,11 +137,11 @@
     <div class="tab" onclick="showRoom(3)">🚗 Гараж</div>
   </div>
 
-  <!-- ЗАЛ — білий -->
+  <!-- ЗАЛ -->
   <div class="room active" id="room-0">
     <div class="room-header">
-      <div class="room-title">Зал</div>
-      <button class="room-toggle" id="rtog-0" onclick="toggleRoom(0)">Все увімк</button>
+      <div class="room-title">🛋 Зал</div>
+      <button class="room-off" onclick="roomOff(0)">✕ Вимкнути</button>
     </div>
     <div class="device" id="dev-0">
       <div class="dev-header">
@@ -194,11 +166,11 @@
     </div>
   </div>
 
-  <!-- КУХНЯ — кольоровий -->
+  <!-- КУХНЯ -->
   <div class="room" id="room-1">
     <div class="room-header">
-      <div class="room-title">Кухня</div>
-      <button class="room-toggle" id="rtog-1" onclick="toggleRoom(1)">Все увімк</button>
+      <div class="room-title">🍳 Кухня</div>
+      <button class="room-off" onclick="roomOff(1)">✕ Вимкнути</button>
     </div>
     <div class="device" id="dev-1">
       <div class="dev-header">
@@ -223,11 +195,11 @@
     </div>
   </div>
 
-  <!-- ГАРДЕРОБ — білий -->
+  <!-- ГАРДЕРОБ -->
   <div class="room" id="room-2">
     <div class="room-header">
-      <div class="room-title">Гардероб</div>
-      <button class="room-toggle" id="rtog-2" onclick="toggleRoom(2)">Все увімк</button>
+      <div class="room-title">👗 Гардероб</div>
+      <button class="room-off" onclick="roomOff(2)">✕ Вимкнути</button>
     </div>
     <div class="device" id="dev-2">
       <div class="dev-header">
@@ -252,11 +224,11 @@
     </div>
   </div>
 
-  <!-- ГАРАЖ — білий + PIR -->
+  <!-- ГАРАЖ -->
   <div class="room" id="room-3">
     <div class="room-header">
-      <div class="room-title">Гараж</div>
-      <button class="room-toggle" id="rtog-3" onclick="toggleRoom(3)">Все увімк</button>
+      <div class="room-title">🚗 Гараж</div>
+      <button class="room-off" onclick="roomOff(3)">✕ Вимкнути</button>
     </div>
     <div class="device" id="dev-3">
       <div class="dev-header">
@@ -294,7 +266,6 @@
     const TOPICS = {
       all:    'smarthome/yulia/all',
       status: 'smarthome/yulia/status',
-      pir:    'smarthome/yulia/pir',
       devs: [
         'smarthome/yulia/dev/living',
         'smarthome/yulia/dev/kitchen',
@@ -308,152 +279,123 @@
       cold:    {r:181, g:205, b:255},
     };
     const COLORS = {
-      r: {r:255, g:0,   b:0},
-      g: {r:0,   g:255, b:0},
-      b: {r:0,   g:0,   b:255},
+      r:{r:255,g:0,b:0}, g:{r:0,g:255,b:0}, b:{r:0,g:0,b:255}
     };
     const state = [
-      {on:false, r:255, g:244, b:229, br:80},
-      {on:false, r:255, g:0,   b:0,   br:80},
-      {on:false, r:255, g:244, b:229, br:80},
-      {on:false, r:255, g:244, b:229, br:80},
+      {on:false,r:255,g:244,b:229,br:80},
+      {on:false,r:255,g:0,b:0,br:80},
+      {on:false,r:255,g:244,b:229,br:80},
+      {on:false,r:255,g:244,b:229,br:80},
     ];
-    let client;
+    let mqttClient;
 
-    function log(msg, cls) {
-      const el = document.getElementById('log');
-      const d = new Date();
-      const t = [d.getHours(),d.getMinutes(),d.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':');
-      const line = document.createElement('div');
-      line.className = 'log-line'+(cls?' '+cls:'');
-      line.textContent = '['+t+'] '+msg;
-      el.appendChild(line);
-      el.scrollTop = el.scrollHeight;
+    function log(msg,cls){
+      const el=document.getElementById('log');
+      const d=new Date();
+      const t=[d.getHours(),d.getMinutes(),d.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':');
+      const line=document.createElement('div');
+      line.className='log-line'+(cls?' '+cls:'');
+      line.textContent='['+t+'] '+msg;
+      el.appendChild(line); el.scrollTop=el.scrollHeight;
     }
 
-    function publish(topic, payload) {
-      if (!client || !client.connected) return;
-      client.publish(topic, JSON.stringify(payload));
+    function publish(topic,payload){
+      if(!mqttClient||!mqttClient.connected) return;
+      mqttClient.publish(topic,JSON.stringify(payload));
     }
 
-    function showRoom(idx) {
+    function showRoom(idx){
       document.querySelectorAll('.room').forEach((r,i)=>r.classList.toggle('active',i===idx));
       document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
     }
 
-    function updateDevUI(idx) {
-      const s = state[idx];
-      document.getElementById('sw-'+idx).checked = s.on;
-      document.getElementById('dev-'+idx).classList.toggle('on', s.on);
-      document.getElementById('br-'+idx).value = s.br;
-      document.getElementById('brv-'+idx).textContent = s.br+'%';
+    function updateDevUI(idx){
+      const s=state[idx];
+      document.getElementById('sw-'+idx).checked=s.on;
+      document.getElementById('dev-'+idx).classList.toggle('on',s.on);
+      document.getElementById('br-'+idx).value=s.br;
+      document.getElementById('brv-'+idx).textContent=s.br+'%';
     }
 
-    function updateBigButton() {
-      const anyOn = state.some(s => s.on);
-      const btn = document.getElementById('btn-all-off');
-      btn.classList.toggle('lights-on', anyOn);
-      document.getElementById('all-off-label').textContent = anyOn ? 'Увімкнено' : 'Вимкнено';
-      document.getElementById('all-off-sub').textContent = anyOn ? 'натисни щоб вимкнути все' : 'все світло вимкнено';
+    function updateBigButton(){
+      const anyOn=state.some(s=>s.on);
+      document.getElementById('btn-all').classList.toggle('lights-on',anyOn);
+      document.getElementById('all-label').textContent=anyOn?'Увімкнено':'Вимкнено';
+      document.getElementById('all-sub').textContent=anyOn?'натисни щоб вимкнути все':'натисни щоб увімкнути все';
     }
 
-    function toggleDev(idx) {
-      state[idx].on = document.getElementById('sw-'+idx).checked;
-      updateDevUI(idx);
+    // Toggle all — якщо хоч щось увімкнено → вимикаємо все, інакше → вмикаємо все
+    function toggleAll(){
+      const anyOn=state.some(s=>s.on);
+      const cmd=anyOn?'off':'on';
+      for(let i=0;i<4;i++){ state[i].on=!anyOn; updateDevUI(i); }
       updateBigButton();
-      publish(TOPICS.devs[idx], {cmd: state[idx].on?'on':'off'});
-      log((state[idx].on?'Увімкнено':'Вимкнено')+' ('+['Зал','Кухня','Гардероб','Гараж'][idx]+')', 'ok');
+      publish(TOPICS.all,{cmd});
+      log(anyOn?'Все вимкнено 🏠':'Все увімкнено 🏠','ok');
     }
 
-    function toggleRoom(idx) {
-      const btn = document.getElementById('rtog-'+idx);
-      const turnOn = btn.textContent.includes('увімк');
-      state[idx].on = turnOn;
-      updateDevUI(idx);
-      updateBigButton();
-      btn.textContent = turnOn ? 'Все вимк' : 'Все увімк';
-      btn.classList.toggle('on', turnOn);
-      publish(TOPICS.devs[idx], {cmd: turnOn?'on':'off'});
-      log((turnOn?'Кімната увімкнена':'Кімната вимкнена')+' ('+['Зал','Кухня','Гардероб','Гараж'][idx]+')', 'ok');
+    function toggleDev(idx){
+      state[idx].on=document.getElementById('sw-'+idx).checked;
+      updateDevUI(idx); updateBigButton();
+      publish(TOPICS.devs[idx],{cmd:state[idx].on?'on':'off'});
+      log((state[idx].on?'Увімкнено':'Вимкнено')+' ('+['Зал','Кухня','Гардероб','Гараж'][idx]+')','ok');
     }
 
-    function allOff() {
-      for (let i=0;i<4;i++) {
-        state[i].on = false;
-        updateDevUI(i);
-        document.getElementById('rtog-'+i).textContent = 'Все увімк';
-        document.getElementById('rtog-'+i).classList.remove('on');
-      }
-      updateBigButton();
-      publish(TOPICS.all, {cmd:'off'});
-      log('Все вимкнено 🏠', 'ok');
+    function roomOff(idx){
+      state[idx].on=false; updateDevUI(idx); updateBigButton();
+      publish(TOPICS.devs[idx],{cmd:'off'});
+      log('Вимкнено ('+['Зал','Кухня','Гардероб','Гараж'][idx]+')','ok');
     }
 
-    function setWhite(idx, temp, btn) {
-      const c = WHITE[temp];
-      state[idx].r=c.r; state[idx].g=c.g; state[idx].b=c.b;
+    function setWhite(idx,temp,btn){
+      const c=WHITE[temp]; state[idx].r=c.r; state[idx].g=c.g; state[idx].b=c.b;
       btn.closest('.color-btns').querySelectorAll('.color-btn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
-      publish(TOPICS.devs[idx], {r:c.r, g:c.g, b:c.b, br:state[idx].br});
+      publish(TOPICS.devs[idx],{r:c.r,g:c.g,b:c.b,br:state[idx].br});
     }
 
-    function setColor(idx, col, btn) {
-      const c = COLORS[col];
-      state[idx].r=c.r; state[idx].g=c.g; state[idx].b=c.b;
+    function setColor(idx,col,btn){
+      const c=COLORS[col]; state[idx].r=c.r; state[idx].g=c.g; state[idx].b=c.b;
       btn.closest('.color-btns').querySelectorAll('.color-btn').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
-      publish(TOPICS.devs[idx], {r:c.r, g:c.g, b:c.b, br:state[idx].br});
+      publish(TOPICS.devs[idx],{r:c.r,g:c.g,b:c.b,br:state[idx].br});
     }
 
-    function setBright(idx, val) {
-      state[idx].br = parseInt(val);
-      document.getElementById('brv-'+idx).textContent = val+'%';
-      publish(TOPICS.devs[idx], {r:state[idx].r, g:state[idx].g, b:state[idx].b, br:parseInt(val)});
+    function setBright(idx,val){
+      state[idx].br=parseInt(val);
+      document.getElementById('brv-'+idx).textContent=val+'%';
+      publish(TOPICS.devs[idx],{r:state[idx].r,g:state[idx].g,b:state[idx].b,br:parseInt(val)});
     }
 
-    function setPir(enabled) {
-      publish(TOPICS.pir, {pirEnabled:enabled});
-      log('PIR: '+(enabled?'увімкнено':'вимкнено'), 'ok');
+    function setPir(enabled){
+      publish(TOPICS.all,{pirEnabled:enabled});
+      log('PIR: '+(enabled?'увімкнено':'вимкнено'),'ok');
     }
 
-    function setConn(s,txt) {
+    function setConn(s,txt){
       document.getElementById('conn').className='conn '+s;
       document.getElementById('conn-text').textContent=txt;
     }
 
-    function connect() {
-      setConn('connecting','підключення...');
-      log('Підключення...');
-      client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt',{
-        clientId:'WebPanel_'+Math.random().toString(16).slice(2,8),
-        clean:true, connectTimeout:8000, reconnectPeriod:3000
-      });
-      client.on('connect',()=>{
-        setConn('connected','підключено');
-        log('Підключено!','ok');
-        const btn = document.getElementById('btn-all-off');
-        btn.disabled = false;
-        document.getElementById('all-off-sub').textContent = 'все світло вимкнено';
-        client.subscribe(TOPICS.status);
-      });
-      client.on('message',(_,payload)=>{
-        try {
-          const data = JSON.parse(payload.toString());
-          if (data.devs) {
-            data.devs.forEach((d,i)=>{
-              if(i>=4) return;
-              state[i].on=d.on; state[i].r=d.r; state[i].g=d.g; state[i].b=d.b; state[i].br=d.br;
-              updateDevUI(i);
-            });
-            updateBigButton();
-          }
-        } catch(e){}
-      });
-      client.on('error',err=>{setConn('error','помилка');log('Помилка: '+err.message,'err');});
-      client.on('reconnect',()=>setConn('connecting','перепідключення...'));
-    }
-
-    connect();
+    mqttClient=mqtt.connect('wss://broker.hivemq.com:8884/mqtt',{
+      clientId:'WebPanel_'+Math.random().toString(16).slice(2,8),
+      clean:true,connectTimeout:8000,reconnectPeriod:3000
+    });
+    mqttClient.on('connect',()=>{
+      setConn('connected','підключено');
+      log('Підключено!','ok');
+      document.getElementById('btn-all').disabled=false;
+      document.getElementById('all-sub').textContent='натисни щоб увімкнути все';
+      mqttClient.subscribe(TOPICS.status);
+    });
+    mqttClient.on('message',(_,payload)=>{
+      try{
+        const data=JSON.parse(payload.toString());
+        if(data.devs){ data.devs.forEach((d,i)=>{ if(i>=4)return; state[i].on=d.on;state[i].r=d.r;state[i].g=d.g;state[i].b=d.b;state[i].br=d.br; updateDevUI(i); }); updateBigButton(); }
+      }catch(e){}
+    });
+    mqttClient.on('error',err=>{setConn('error','помилка');log('Помилка: '+err.message,'err');});
+    mqttClient.on('reconnect',()=>setConn('connecting','перепідключення...'));
   </script>
 </body>
 </html>
