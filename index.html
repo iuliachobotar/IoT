@@ -223,7 +223,7 @@
     </div>
   </div>
   <div class="log" id="log"><div class="log-line">Ініціалізація...</div></div>
-  <footer>MQTT · broker.hivemq.com · smarthome/yulia</footer>
+  <footer>MQTT · broker.emqx.io · smarthome/yulia</footer>
 </div>
 
 <!-- ROOM PAGES -->
@@ -682,7 +682,7 @@ function setConn(state, txt) {
 }
 
 // ─── MQTT connect ─────────────────────────────────────────────
-mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
+mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
   clientId:      'WebPanel_' + Math.random().toString(16).slice(2, 8),
   clean:         true,
   connectTimeout: 8000,
