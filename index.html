@@ -318,21 +318,24 @@
     }
 
     function updateBigButton(){
-      const anyOn=state.some(s=>s.on);
-      document.getElementById('btn-all').classList.toggle('lights-on',anyOn);
-      document.getElementById('all-label').textContent=anyOn?'Увімкнено':'Вимкнено';
-      document.getElementById('all-sub').textContent=anyOn?'натисни щоб вимкнути все':'натисни щоб увімкнути все';
-    }
+  const anyOn = state.some(s => s.on);
+  document.getElementById('btn-all').classList.toggle('lights-on', anyOn);
+  document.getElementById('all-label').textContent = anyOn ? 'Увімкнено' : 'Вимкнено';
+  document.getElementById('all-sub').textContent = anyOn ? 'натисни щоб вимкнути все' : 'натисни щоб увімкнути все';
+}
 
     // Toggle all — якщо хоч щось увімкнено → вимикаємо все, інакше → вмикаємо все
     function toggleAll(){
-      const anyOn=state.some(s=>s.on);
-      const cmd=anyOn?'off':'on';
-      for(let i=0;i<4;i++){ state[i].on=!anyOn; updateDevUI(i); }
-      updateBigButton();
-      publish(TOPICS.all,{cmd});
-      log(anyOn?'Все вимкнено 🏠':'Все увімкнено 🏠','ok');
-    }
+  const anyOn = state.some(s => s.on);
+  const cmd = anyOn ? 'off' : 'on';
+  for(let i = 0; i < 4; i++){
+    state[i].on = (cmd === 'on');
+    updateDevUI(i);
+  }
+  updateBigButton();
+  publish(TOPICS.all, {cmd});
+  log(cmd === 'off' ? 'Все вимкнено 🏠' : 'Все увімкнено 🏠', 'ok');
+}
 
     function toggleDev(idx){
       state[idx].on=document.getElementById('sw-'+idx).checked;
