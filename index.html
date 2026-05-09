@@ -1,639 +1,459 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Smart Home — Юлія</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet"/>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#080810;--s1:#0f0f1a;--s2:#161625;--border:#252538;
-  --acc:#7c6df0;--acc2:#a08fff;--acc-glow:rgba(124,109,240,0.2);
-  --text:#eeeef5;--muted:#5a5a7a;--green:#2dd4a0;--red:#f06060;
-  --warm:#f5a340;--cold:#7abfff;
-  --mono:'JetBrains Mono',monospace;--ui:'Outfit',sans-serif;
-}
-html{background:var(--bg)}
-body{background:var(--bg);color:var(--text);font-family:var(--ui);min-height:100vh;padding:1.25rem 1rem 4rem;max-width:440px;margin:0 auto}
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c26;
+      --border:#2a2a38;--accent:#f5c400;--accent-dim:rgba(245,196,0,0.12);
+      --text:#e8e8f0;--muted:#6b6b80;--green:#1dbd8a;--red:#e24b4a;
+      --mono:'Space Mono',monospace;--display:'Syne',sans-serif;
+    }
+    body{background:var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;padding:1.5rem 1rem 3rem;}
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(245,196,0,0.05) 0%,transparent 70%);pointer-events:none;}
 
-/* noise overlay */
-body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;opacity:.5;z-index:0}
-body>*{position:relative;z-index:1}
+    /* HEADER */
+    header{text-align:center;margin-bottom:1.5rem;}
+    .app-label{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:.4rem;}
+    h1{font-size:24px;font-weight:800;letter-spacing:-.02em;}
+    h1 span{color:var(--accent);}
+    .conn{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:999px;border:1px solid var(--border);color:var(--muted);margin-top:.5rem;transition:all .3s;}
+    .conn.connected{border-color:var(--green);color:var(--green);}
+    .conn.error{border-color:var(--red);color:var(--red);}
+    .conn-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+    .conn.connecting .conn-dot{animation:blink 1s infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-/* HEADER */
-header{margin-bottom:1.5rem;padding-top:.5rem}
-.header-row{display:flex;align-items:center;justify-content:space-between}
-.logo{font-size:22px;font-weight:800;letter-spacing:-.03em}
-.logo em{font-style:normal;color:var(--acc2)}
-.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;padding:5px 10px;border-radius:999px;border:1px solid var(--border);color:var(--muted);transition:all .3s}
-.chip.ok{border-color:rgba(45,212,160,.4);color:var(--green);background:rgba(45,212,160,.07)}
-.chip.err{border-color:rgba(240,96,96,.4);color:var(--red)}
-.dot{width:5px;height:5px;border-radius:50%;background:currentColor}
-.chip.connecting .dot{animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+    /* BIG ALL-OFF BUTTON */
+    .all-off-wrap{max-width:400px;margin:0 auto 1.5rem;}
+    .all-off{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      width:100%;padding:2rem 1rem 1.75rem;
+      background:var(--surface);border:1px solid var(--border);border-radius:24px;
+      cursor:pointer;transition:all .35s;gap:.4rem;position:relative;overflow:hidden;
+    }
+    .all-off::before{
+      content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+      width:220px;height:220px;border-radius:50%;background:var(--accent);
+      opacity:0;filter:blur(70px);transition:opacity .5s;pointer-events:none;
+    }
+    .all-off:disabled{opacity:.45;cursor:not-allowed;}
+    .all-off:not(:disabled):hover{border-color:rgba(245,196,0,.3);}
+    .all-off:not(:disabled):active{transform:scale(.97);}
+    .all-off.lights-on{border-color:rgba(245,196,0,.45);background:rgba(245,196,0,.05);}
+    .all-off.lights-on::before{opacity:.15;}
+    .bulb-body{fill:#2a2a38;transition:fill .4s;}
+    .bulb-rays{opacity:0;transition:opacity .4s;}
+    .all-off.lights-on .bulb-body{fill:var(--accent);}
+    .all-off.lights-on .bulb-rays{opacity:1;}
+    .all-off-label{font-size:22px;font-weight:800;color:var(--text);margin-top:.25rem;}
+    .all-off-sub{font-family:var(--mono);font-size:11px;color:var(--muted);}
 
-/* ALL-LIGHTS BAR */
-.all-bar{background:var(--s1);border:1px solid var(--border);border-radius:18px;padding:1.1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:border-color .4s,box-shadow .4s}
-.all-bar.lit{border-color:rgba(124,109,240,.4);box-shadow:0 0 32px rgba(124,109,240,.1)}
-.all-info{}
-.all-title{font-size:16px;font-weight:700;margin-bottom:2px}
-.all-sub{font-family:var(--mono);font-size:10px;color:var(--muted)}
-.all-btns{display:flex;gap:7px;flex-shrink:0}
-.btn-sm{padding:8px 14px;font-family:var(--ui);font-size:12px;font-weight:600;border-radius:10px;border:1px solid var(--border);cursor:pointer;background:var(--s2);color:var(--muted);transition:all .15s;white-space:nowrap}
-.btn-sm:disabled{opacity:.3;cursor:not-allowed}
-.btn-sm.on:not(:disabled){border-color:rgba(124,109,240,.5);color:var(--acc2);background:rgba(124,109,240,.1)}
-.btn-sm.on:not(:disabled):hover{background:rgba(124,109,240,.18)}
-.btn-sm.off:not(:disabled){border-color:rgba(240,96,96,.4);color:var(--red);background:rgba(240,96,96,.07)}
-.btn-sm.off:not(:disabled):hover{background:rgba(240,96,96,.12)}
-.btn-sm:not(:disabled):active{transform:scale(.95)}
+    /* TABS */
+    .tabs{display:flex;gap:6px;max-width:400px;margin:0 auto 1.25rem;}
+    .tab{flex:1;padding:8px 2px;font-family:var(--display);font-size:11px;font-weight:700;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .15s;text-align:center;}
+    .tab.active{background:var(--accent-dim);border-color:rgba(245,196,0,.4);color:var(--accent);}
+    .tab:hover:not(.active){color:var(--text);}
 
-/* TABS */
-.tabs{display:flex;gap:6px;margin-bottom:1rem;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
-.tab{flex-shrink:0;padding:7px 13px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;border-radius:9px;border:1px solid var(--border);cursor:pointer;background:var(--s1);color:var(--muted);transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
-.tab-pip{width:5px;height:5px;border-radius:50%;background:var(--border);transition:background .3s,box-shadow .3s}
-.tab.lit .tab-pip{background:var(--acc);box-shadow:0 0 6px var(--acc)}
-.tab.active{border-color:rgba(124,109,240,.5);color:var(--acc2);background:var(--acc-glow)}
-.tab:hover:not(.active){color:var(--text)}
+    /* ROOM */
+    .room{display:none;max-width:400px;margin:0 auto;}
+    .room.active{display:block;}
+    .room-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+    .room-title{font-size:18px;font-weight:800;}
+    .room-toggle{padding:8px 14px;font-family:var(--display);font-size:12px;font-weight:700;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .15s;}
+    .room-toggle.on{border-color:rgba(245,196,0,.4);color:var(--accent);}
+    .room-toggle:active{transform:scale(.96);}
 
-/* PAGES */
-.page{display:none;animation:fadeIn .2s ease}
-.page.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    /* DEVICE CARD */
+    .device{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:1.25rem;margin-bottom:1rem;transition:border-color .3s;}
+    .device.on{border-color:rgba(245,196,0,.25);}
+    .dev-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+    .dev-name{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px;}
+    .dev-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .3s;flex-shrink:0;}
+    .device.on .dev-dot{background:var(--accent);}
 
-/* HOME PAGE — rooms grid */
-.rooms-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
-.room-card{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:1rem;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
-.room-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(124,109,240,.06),transparent);opacity:0;transition:opacity .3s}
-.room-card.lit::before{opacity:1}
-.room-card.lit{border-color:rgba(124,109,240,.3)}
-.room-card:active{transform:scale(.97)}
-.room-icon{font-size:26px;margin-bottom:.5rem}
-.room-name{font-size:13px;font-weight:700;margin-bottom:3px}
-.room-info{font-family:var(--mono);font-size:10px;color:var(--muted)}
-.room-chips{display:flex;gap:4px;margin-top:.55rem;flex-wrap:wrap}
-.chip-led{width:9px;height:9px;border-radius:50%;background:var(--border);border:1px solid transparent;transition:all .3s}
-.chip-led.on{border-color:rgba(255,255,255,.2)}
+    /* TOGGLE */
+    .toggle{position:relative;width:40px;height:22px;cursor:pointer;flex-shrink:0;}
+    .toggle input{opacity:0;width:0;height:0;}
+    .toggle-slider{position:absolute;inset:0;background:#2a2a38;border-radius:999px;transition:.3s;}
+    .toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#6b6b80;border-radius:50%;transition:.3s;}
+    .toggle input:checked+.toggle-slider{background:rgba(245,196,0,.2);border:1px solid rgba(245,196,0,.4);}
+    .toggle input:checked+.toggle-slider::before{transform:translateX(18px);background:var(--accent);}
 
-/* LOG */
-.log-box{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:.75rem;font-family:var(--mono);font-size:10px;color:var(--muted);max-height:80px;overflow-y:auto;margin-bottom:.75rem;scrollbar-width:none}
-.log-box::-webkit-scrollbar{display:none}
-.ll.ok{color:var(--green)}.ll.err{color:var(--red)}
+    /* COLOR BUTTONS */
+    .section-label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem;}
+    .color-section{margin-bottom:.75rem;}
+    .color-btns{display:flex;gap:6px;}
+    .color-btn{flex:1;padding:10px 2px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);font-family:var(--display);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;color:var(--muted);}
+    .color-btn:active{transform:scale(.95);}
 
-footer{font-family:var(--mono);font-size:10px;color:var(--muted);text-align:center;letter-spacing:.04em;padding-top:.25rem}
+    /* WHITE TEMP */
+    .temp-warm{color:#ffb347;}
+    .temp-warm.active{border-color:#ffb347;background:rgba(255,179,71,.1);color:#ffb347;}
+    .temp-neutral{color:#e8e8f0;}
+    .temp-neutral.active{border-color:#aaa;background:rgba(255,255,255,.06);color:#fff;}
+    .temp-cold{color:#87ceeb;}
+    .temp-cold.active{border-color:#87ceeb;background:rgba(135,206,235,.1);color:#87ceeb;}
 
-/* ROOM PAGE */
-.rm-header{display:flex;align-items:center;gap:10px;margin-bottom:.9rem}
-.rm-title{font-size:20px;font-weight:800;flex:1}
-.rm-btns{display:flex;gap:8px;margin-bottom:1.1rem}
-.btn-room{flex:1;padding:11px;font-size:12px;font-weight:700;font-family:var(--ui);border-radius:12px;border:1px solid var(--border);cursor:pointer;background:var(--s1);color:var(--muted);transition:all .15s}
-.btn-room:disabled{opacity:.3;cursor:not-allowed}
-.btn-room.r-on:not(:disabled){border-color:rgba(124,109,240,.5);color:var(--acc2);background:rgba(124,109,240,.1)}
-.btn-room.r-off:not(:disabled){border-color:rgba(240,96,96,.4);color:var(--red)}
-.btn-room:not(:disabled):active{transform:scale(.97)}
+    /* RGB COLOR */
+    .col-r{color:#e24b4a;}
+    .col-r.active{border-color:#e24b4a;background:rgba(226,75,74,.1);color:#e24b4a;}
+    .col-g{color:#1dbd8a;}
+    .col-g.active{border-color:#1dbd8a;background:rgba(29,189,138,.1);color:#1dbd8a;}
+    .col-b{color:#4a9eff;}
+    .col-b.active{border-color:#4a9eff;background:rgba(74,158,255,.1);color:#4a9eff;}
 
-/* DEVICE CARD */
-.dev-card{background:var(--s1);border:1.5px solid var(--border);border-radius:16px;padding:1.1rem 1.1rem 1.2rem;margin-bottom:.85rem;transition:border-color .3s,box-shadow .3s}
-.dev-card.on{border-color:rgba(124,109,240,.4);box-shadow:0 2px 20px rgba(124,109,240,.08)}
-.dev-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
-.dev-label{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
-.dev-type-badge{font-family:var(--mono);font-size:9px;padding:3px 7px;border-radius:5px;border:1px solid var(--border);color:var(--muted);letter-spacing:.05em}
-.color-swatch{width:16px;height:16px;border-radius:50%;border:2px solid rgba(255,255,255,.12);flex-shrink:0;transition:background .2s}
-.tog-wrap{display:flex;align-items:center;gap:8px}
-.tog-label{font-family:var(--mono);font-size:10px;color:var(--muted)}
+    /* BRIGHTNESS */
+    .bright-section{margin-top:.75rem;}
+    .bright-row{display:flex;align-items:center;gap:10px;}
+    .bright-val{font-family:var(--mono);font-size:11px;color:var(--muted);width:32px;text-align:right;}
+    input[type=range]{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:#2a2a38;outline:none;cursor:pointer;}
+    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;}
 
-/* TOGGLE */
-.tog{position:relative;width:46px;height:25px;flex-shrink:0}
-.tog input{opacity:0;width:0;height:0;position:absolute}
-.tog-track{position:absolute;inset:0;background:#1e1e30;border-radius:999px;cursor:pointer;transition:.3s;border:1px solid var(--border)}
-.tog-track::before{content:'';position:absolute;width:17px;height:17px;left:3px;top:3px;background:var(--muted);border-radius:50%;transition:.3s}
-.tog input:checked+.tog-track{background:var(--acc-glow);border-color:rgba(124,109,240,.6)}
-.tog input:checked+.tog-track::before{transform:translateX(21px);background:var(--acc2)}
-.tog input:disabled+.tog-track{opacity:.35;cursor:not-allowed}
+    /* PIR */
+    .pir-row{display:flex;align-items:center;justify-content:space-between;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);}
+    .pir-label{font-family:var(--mono);font-size:11px;color:var(--muted);}
 
-/* MODE TABS */
-.mode-tabs{display:flex;background:var(--bg);border-radius:9px;padding:3px;gap:3px;margin-bottom:1rem;border:1px solid var(--border)}
-.mode-tab{flex:1;padding:7px;font-family:var(--mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;border:none;background:transparent;color:var(--muted);cursor:pointer;border-radius:7px;transition:all .15s}
-.mode-tab.active{background:var(--s2);color:var(--acc2);border:1px solid rgba(124,109,240,.3)}
-
-/* PANELS */
-.panel{display:none}.panel.active{display:block}
-
-/* COLOR PICKER */
-.hue-strip{height:22px;border-radius:11px;background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);cursor:pointer;position:relative;border:1px solid rgba(255,255,255,.08);margin-bottom:.85rem;user-select:none}
-.hue-thumb{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;border:3px solid #fff;transform:translate(-50%,-50%);box-shadow:0 0 0 2px rgba(0,0,0,.5);pointer-events:none;transition:left .05s}
-
-.ctrl-row{display:flex;align-items:center;gap:10px;margin-bottom:.7rem}
-.ctrl-row:last-child{margin-bottom:0}
-.ctrl-row label{font-size:11px;color:var(--muted);width:88px;flex-shrink:0}
-.ctrl-row input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer}
-.ctrl-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--acc2);border:2px solid #fff;cursor:pointer;box-shadow:0 0 0 2px rgba(0,0,0,.3)}
-.ctrl-row .val{font-family:var(--mono);font-size:10px;color:var(--text);width:46px;text-align:right;flex-shrink:0}
-
-.preview-row{display:flex;align-items:center;gap:10px;margin-top:.75rem}
-.preview-sq{width:38px;height:38px;border-radius:10px;border:1.5px solid rgba(255,255,255,.1);flex-shrink:0;transition:background .15s}
-.preview-txt{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.6}
-
-/* KELVIN */
-.kelvin-bar{height:14px;border-radius:7px;background:linear-gradient(to right,#ff8800,#ffffff,#aad4ff);margin-bottom:.5rem;border:1px solid rgba(255,255,255,.08)}
-.k-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted);margin-bottom:.85rem}
-
-/* WHITE TEMP BUTTONS */
-.temp-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:.85rem}
-.temp-btn{padding:10px 4px;font-size:11px;font-weight:600;border-radius:10px;border:1px solid var(--border);cursor:pointer;background:var(--s2);color:var(--muted);transition:all .15s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px}
-.temp-btn span.ico{font-size:16px}
-.temp-btn:not(:disabled):hover{border-color:rgba(124,109,240,.4);color:var(--acc2)}
-.temp-btn.sel{border-color:rgba(124,109,240,.6);color:var(--acc2);background:rgba(124,109,240,.12)}
-.temp-btn:disabled{opacity:.3;cursor:not-allowed}
-
-/* PIR CARD */
-.pir-card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem;margin-bottom:.85rem}
-.pir-head{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem}
-.pir-body{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.pir-info-txt{font-size:13px;font-weight:600;margin-bottom:2px}
-.pir-info-sub{font-size:11px;color:var(--muted)}
-.pir-stat{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:.55rem}
-.pir-stat.ok{color:var(--green)}
-
-/* section divider */
-.section-label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid var(--border)}
-</style>
+    /* LOG */
+    .log-wrap{max-width:400px;margin:1.5rem auto 0;}
+    .log{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.75rem;font-family:var(--mono);font-size:11px;color:var(--muted);max-height:100px;overflow-y:auto;}
+    .log-line{padding:1px 0;}
+    .log-line.ok{color:var(--green);}
+    .log-line.err{color:var(--red);}
+  </style>
 </head>
 <body>
-
-<header>
-  <div class="header-row">
-    <div class="logo">Smart <em>Home</em></div>
-    <div class="chip connecting" id="conn"><span class="dot"></span><span id="conn-txt">підключення...</span></div>
-  </div>
-</header>
-
-<div class="all-bar" id="all-bar">
-  <div class="all-info">
-    <div class="all-title" id="all-title">Весь дім</div>
-    <div class="all-sub" id="all-sub">очікування...</div>
-  </div>
-  <div class="all-btns">
-    <button class="btn-sm on" id="btn-on" disabled onclick="sendAll('on')">Увімкнути</button>
-    <button class="btn-sm off" id="btn-off" disabled onclick="sendAll('off')">Вимкнути</button>
-  </div>
-</div>
-
-<div class="tabs">
-  <div class="tab active" data-pg="home" onclick="goPage('home')"><span class="tab-pip" id="pip-home"></span>Дім</div>
-  <div class="tab" data-pg="living" onclick="goPage('living')"><span class="tab-pip" id="pip-living"></span>Зал</div>
-  <div class="tab" data-pg="kitchen" onclick="goPage('kitchen')"><span class="tab-pip" id="pip-kitchen"></span>Кухня</div>
-  <div class="tab" data-pg="garage" onclick="goPage('garage')"><span class="tab-pip" id="pip-garage"></span>Гараж</div>
-  <div class="tab" data-pg="wardrobe" onclick="goPage('wardrobe')"><span class="tab-pip" id="pip-wardrobe"></span>Гардероб</div>
-</div>
-
-<div class="page active" id="pg-home">
-  <div class="rooms-grid">
-    <div class="room-card" id="rc-living" onclick="goPage('living')">
-      <div class="room-icon">🛋️</div>
-      <div class="room-name">Зал</div>
-      <div class="room-info" id="ri-living">0 / 2</div>
-      <div class="room-chips">
-        <div class="chip-led" id="cl-living-0"></div>
-        <div class="chip-led" id="cl-living-1"></div>
-      </div>
+  <header>
+    <div class="app-label">IoT Project</div>
+    <h1>Smart <span>Home</span></h1>
+    <div class="conn connecting" id="conn">
+      <span class="conn-dot"></span>
+      <span id="conn-text">підключення...</span>
     </div>
-    <div class="room-card" id="rc-kitchen" onclick="goPage('kitchen')">
-      <div class="room-icon">🍳</div>
-      <div class="room-name">Кухня</div>
-      <div class="room-info" id="ri-kitchen">0 / 2</div>
-      <div class="room-chips">
-        <div class="chip-led" id="cl-kitchen-0"></div>
-        <div class="chip-led" id="cl-kitchen-1"></div>
-      </div>
-    </div>
-    <div class="room-card" id="rc-garage" onclick="goPage('garage')">
-      <div class="room-icon">🚗</div>
-      <div class="room-name">Гараж</div>
-      <div class="room-info" id="ri-garage">0 / 2</div>
-      <div class="room-chips">
-        <div class="chip-led" id="cl-garage-0"></div>
-        <div class="chip-led" id="cl-garage-1"></div>
-      </div>
-    </div>
-    <div class="room-card" id="rc-wardrobe" onclick="goPage('wardrobe')">
-      <div class="room-icon">👔</div>
-      <div class="room-name">Гардероб</div>
-      <div class="room-info" id="ri-wardrobe">0 / 2</div>
-      <div class="room-chips">
-        <div class="chip-led" id="cl-wardrobe-0"></div>
-        <div class="chip-led" id="cl-wardrobe-1"></div>
-      </div>
-    </div>
+  </header>
+
+  <!-- ВЕЛИКА КНОПКА -->
+  <div class="all-off-wrap">
+    <button class="all-off" id="btn-all-off" onclick="allOff()" disabled>
+      <svg width="64" height="72" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="26" r="20" class="bulb-body"/>
+        <circle cx="32" cy="26" r="20" fill="#f5c400" opacity="0.3" class="bulb-rays"/>
+        <rect x="22" y="45" width="20" height="5" rx="2.5" fill="#444"/>
+        <rect x="24" y="52" width="16" height="5" rx="2.5" fill="#444"/>
+        <rect x="26" y="59" width="12" height="5" rx="2.5" fill="#555"/>
+        <!-- промені -->
+        <line x1="32" y1="3" x2="32" y2="0" stroke="#f5c400" stroke-width="2" stroke-linecap="round" class="bulb-rays"/>
+        <line x1="50" y1="8" x2="52" y2="6" stroke="#f5c400" stroke-width="2" stroke-linecap="round" class="bulb-rays"/>
+        <line x1="14" y1="8" x2="12" y2="6" stroke="#f5c400" stroke-width="2" stroke-linecap="round" class="bulb-rays"/>
+        <line x1="57" y1="26" x2="60" y2="26" stroke="#f5c400" stroke-width="2" stroke-linecap="round" class="bulb-rays"/>
+        <line x1="7" y1="26" x2="4" y2="26" stroke="#f5c400" stroke-width="2" stroke-linecap="round" class="bulb-rays"/>
+      </svg>
+      <div class="all-off-label" id="all-off-label">Вимкнено</div>
+      <div class="all-off-sub" id="all-off-sub">очікування підключення</div>
+    </button>
   </div>
-  <div class="log-box" id="log"><span class="ll">Ініціалізація...</span></div>
-  <footer>MQTT · broker.hivemq.com · smarthome/yulia</footer>
-</div>
 
-<div class="page" id="pg-living"></div>
-<div class="page" id="pg-kitchen"></div>
-<div class="page" id="pg-garage"></div>
-<div class="page" id="pg-wardrobe"></div>
+  <!-- ТАБИ -->
+  <div class="tabs">
+    <div class="tab active" onclick="showRoom(0)">🛋 Зал</div>
+    <div class="tab" onclick="showRoom(1)">🍳 Кухня</div>
+    <div class="tab" onclick="showRoom(2)">👗 Гардероб</div>
+    <div class="tab" onclick="showRoom(3)">🚗 Гараж</div>
+  </div>
 
-<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-<script>
-// ── CONFIG ──────────────────────────────────────────────────────────────────
-const ROOMS = [
-  { id:'living',   name:'Зал',      icon:'🛋️', hasPir:false },
-  { id:'kitchen',  name:'Кухня',    icon:'🍳', hasPir:false },
-  { id:'garage',   name:'Гараж',    icon:'🚗', hasPir:true  },
-  { id:'wardrobe', name:'Гардероб', icon:'👔', hasPir:false },
-];
-// ВАЖЛИВО: ці id мають збігатися з ESP32 devTopics
-const DEV_IDS   = ['white','color'];   // підіндекс 0 = білий, 1 = кольоровий
-const DEV_NAMES = ['Біла лампа','Кольорова лампа'];
-const DEV_TYPES = ['white','color'];
-
-const BASE        = 'smarthome/yulia';
-const T_ALL       = BASE+'/all';
-const T_STATUS    = BASE+'/status';
-const T_PIR       = BASE+'/pir';
-const rTopic  = id  => BASE+'/room/'+id;
-const dTopic  = (r,d) => BASE+'/dev/'+r+'/'+DEV_IDS[d];
-
-// KELVIN presets
-const K_WARM    = 2700;
-const K_NEUTRAL = 4000;
-const K_COLD    = 6500;
-
-// ── STATE ───────────────────────────────────────────────────────────────────
-const S = ROOMS.map(() => [
-  { on:false, type:'white', br:80, kelvin:3000, kSel:null },   // white
-  { on:false, type:'color', br:80, r:255, g:100, b:200, hue:300, sat:80 }, // color
-]);
-let pirEnabled = true;
-let ready = false;
-let mqtt;
-
-// ── MQTT ─────────────────────────────────────────────────────────────────────
-function pub(topic, obj) {
-  if(!mqtt||!mqtt.connected){ log('Не підключено','err'); return; }
-  mqtt.publish(topic, JSON.stringify(obj));
-  log('→ '+topic.split('/').slice(-2).join('/')+': '+JSON.stringify(obj));
-}
-
-function sendAll(cmd) {
-  const on = cmd==='on';
-  S.forEach(r=>r.forEach(d=>d.on=on));
-  pub(T_ALL, {cmd});
-  refreshUI(); rebuildCurrentPage();
-}
-
-function sendRoom(rid, cmd) {
-  const on = cmd==='on';
-  const ri = ROOMS.findIndex(r=>r.id===rid);
-  if(ri>=0) S[ri].forEach(d=>d.on=on);
-  pub(rTopic(rid), {cmd});
-  refreshUI(); rebuildCurrentPage();
-}
-
-function sendDev(ri, di) {
-  const s = S[ri][di];
-  const payload = { cmd: s.on?'on':'off', br: s.br };
-  if(s.type==='white') {
-    payload.k = s.kelvin;
-  } else {
-    payload.r = s.r; payload.g = s.g; payload.b = s.b;
-  }
-  pub(dTopic(ROOMS[ri].id, di), payload);
-  refreshUI();
-}
-
-function sendKelvin(ri, di, k) {
-  S[ri][di].kelvin = k;
-  pub(dTopic(ROOMS[ri].id, di), { k });
-}
-
-function sendPir(v) {
-  pirEnabled = v;
-  pub(T_PIR, { pirEnabled:v });
-  const st = document.getElementById('pir-stat');
-  if(st){ st.textContent=v?'активний — реагує на рух':'вимкнений'; st.className='pir-stat'+(v?' ok':''); }
-}
-
-// ── MQTT RECEIVE ─────────────────────────────────────────────────────────────
-function onStatus(raw) {
-  try {
-    const d = JSON.parse(raw);
-    if(d.lights) {
-      d.lights.forEach((l,i)=>{
-        const ri=Math.floor(i/2), di=i%2;
-        if(S[ri]&&S[ri][di]) {
-          S[ri][di].on = !!l.on;
-          S[ri][di].br = l.br??80;
-          if(di===0){ S[ri][di].kelvin=l.k||3000; }
-          else { S[ri][di].r=l.r||255; S[ri][di].g=l.g||100; S[ri][di].b=l.b||200; }
-        }
-      });
-    }
-    if(d.pir!==undefined) pirEnabled=d.pir;
-    refreshUI(); rebuildCurrentPage();
-  } catch(e){}
-}
-
-// ── COLOR MATH ───────────────────────────────────────────────────────────────
-function hsvToRgb(h,s,v) {
-  s/=100; v/=100;
-  const i=Math.floor(h/60)%6, f=h/60-Math.floor(h/60);
-  const p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);
-  const map=[[v,t,p],[q,v,p],[p,v,t],[p,q,v],[t,p,v],[v,p,q]];
-  const [r,g,b]=map[i];
-  return [Math.round(r*255),Math.round(g*255),Math.round(b*255)];
-}
-
-// ── UI REFRESH ───────────────────────────────────────────────────────────────
-function refreshUI() {
-  const totalOn = S.flat().filter(d=>d.on).length;
-  const bar = document.getElementById('all-bar');
-  if(bar) bar.className='all-bar'+(totalOn>0?' lit':'');
-  const allSub = document.getElementById('all-sub');
-  if(allSub) allSub.textContent = ready ? (totalOn>0?totalOn+' пристроїв увімкнено':'все вимкнено') : 'очікування...';
-
-  ROOMS.forEach((room,ri)=>{
-    let onCnt=0;
-    S[ri].forEach((s,di)=>{
-      if(s.on) onCnt++;
-      const cl=document.getElementById(`cl-${room.id}-${di}`);
-      if(cl){
-        cl.className='chip-led'+(s.on?' on':'');
-        if(s.on) cl.style.background=s.type==='color'?`rgb(${s.r},${s.g},${s.b})`:'#f5d080';
-        else cl.style.background='';
-      }
-      // update visible dev card if open
-      const tog=document.getElementById(`tog-${room.id}-${di}`);
-      if(tog) tog.checked=s.on;
-      const togLbl=document.getElementById(`toglbl-${room.id}-${di}`);
-      if(togLbl) togLbl.textContent=s.on?'увімк':'вимк';
-      const dc=document.getElementById(`dc-${room.id}-${di}`);
-      if(dc) dc.className='dev-card'+(s.on?' on':'');
-      const sw=document.getElementById(`sw-${room.id}-${di}`);
-      if(sw&&s.type==='color') sw.style.background=s.on?`rgb(${s.r},${s.g},${s.b})`:'#252538';
-    });
-    const rc=document.getElementById(`rc-${room.id}`);
-    if(rc) rc.className='room-card'+(onCnt>0?' lit':'');
-    const ri_el=document.getElementById(`ri-${room.id}`);
-    if(ri_el) ri_el.textContent=onCnt+'/2 увімкнено';
-    const pip=document.getElementById(`pip-${room.id}`);
-    if(pip){ pip.style.background=onCnt>0?'var(--acc)':''; pip.style.boxShadow=onCnt>0?'0 0 6px var(--acc)':''; }
-    const tab=document.querySelector(`.tab[data-pg="${room.id}"]`);
-    if(tab) tab.className='tab'+(onCnt>0?' lit':'')+(tab.classList.contains('active')?' active':'');
-  });
-}
-
-// ── BUILD ROOM PAGE ──────────────────────────────────────────────────────────
-function buildRoom(ri) {
-  const room=ROOMS[ri];
-  const el=document.getElementById('pg-'+room.id);
-  let h=`<div class="rm-header"><div class="rm-title">${room.icon} ${room.name}</div></div>
-  <div class="rm-btns">
-    <button class="btn-room r-on" ${ready?'':'disabled'} onclick="sendRoom('${room.id}','on')">💡 Увімкнути все</button>
-    <button class="btn-room r-off" ${ready?'':'disabled'} onclick="sendRoom('${room.id}','off')">✕ Вимкнути все</button>
-  </div>`;
-
-  DEV_NAMES.forEach((name,di)=>{
-    const s=S[ri][di];
-    const isColor=di===1;
-    const [r,g,b]=isColor?hsvToRgb(s.hue,s.sat,s.br):[255,220,140];
-    if(isColor){ s.r=r;s.g=g;s.b=b; }
-    const hex='#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
-    const swColor=s.on?(isColor?hex:'#f5d080'):'#252538';
-
-    h+=`<div class="dev-card${s.on?' on':''}" id="dc-${room.id}-${di}">
-      <div class="dev-top">
-        <div class="dev-label">
-          ${isColor?'🌈':'💡'} ${name}
-          <span class="dev-type-badge">${isColor?'RGB':'Біла'}</span>
-          ${isColor?`<div class="color-swatch" id="sw-${room.id}-${di}" style="background:${swColor}"></div>`:''}
+  <!-- ЗАЛ — білий -->
+  <div class="room active" id="room-0">
+    <div class="room-header">
+      <div class="room-title">Зал</div>
+      <button class="room-toggle" id="rtog-0" onclick="toggleRoom(0)">Все увімк</button>
+    </div>
+    <div class="device" id="dev-0">
+      <div class="dev-header">
+        <div class="dev-name"><span class="dev-dot"></span>Люстра</div>
+        <label class="toggle"><input type="checkbox" id="sw-0" onchange="toggleDev(0)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="color-section">
+        <div class="section-label">Температура білого</div>
+        <div class="color-btns">
+          <button class="color-btn temp-warm" onclick="setWhite(0,'warm',this)">☀ Тепле</button>
+          <button class="color-btn temp-neutral active" onclick="setWhite(0,'neutral',this)">◎ Нейтральне</button>
+          <button class="color-btn temp-cold" onclick="setWhite(0,'cold',this)">❄ Холодне</button>
         </div>
-        <div class="tog-wrap">
-          <span class="tog-label" id="toglbl-${room.id}-${di}">${s.on?'увімк':'вимк'}</span>
-          <label class="tog">
-            <input type="checkbox" id="tog-${room.id}-${di}" ${s.on?'checked':''} ${ready?'':'disabled'} onchange="onToggle(${ri},${di})">
-            <span class="tog-track"></span>
-          </label>
+      </div>
+      <div class="bright-section">
+        <div class="section-label">Яскравість</div>
+        <div class="bright-row">
+          <input type="range" min="0" max="100" value="80" id="br-0" oninput="setBright(0,this.value)">
+          <div class="bright-val" id="brv-0">80%</div>
         </div>
-      </div>`;
+      </div>
+    </div>
+  </div>
 
-    if(!isColor) {
-      // WHITE LAMP — temp buttons + brightness
-      const kSel=s.kelvin<=3000?0:s.kelvin<=4500?1:2;
-      h+=`<div class="section-label">Температура кольору</div>
-      <div class="temp-btns">
-        <button class="temp-btn${kSel===0?' sel':''}" ${ready?'':'disabled'} onclick="onTempBtn(${ri},${di},0)">
-          <span class="ico">🕯️</span>Тепле<span style="font-size:9px;color:var(--warm);font-family:var(--mono)">2700K</span>
-        </button>
-        <button class="temp-btn${kSel===1?' sel':''}" ${ready?'':'disabled'} onclick="onTempBtn(${ri},${di},1)">
-          <span class="ico">☀️</span>Нейтральне<span style="font-size:9px;color:#ddd;font-family:var(--mono)">4000K</span>
-        </button>
-        <button class="temp-btn${kSel===2?' sel':''}" ${ready?'':'disabled'} onclick="onTempBtn(${ri},${di},2)">
-          <span class="ico">❄️</span>Холодне<span style="font-size:9px;color:var(--cold);font-family:var(--mono)">6500K</span>
-        </button>
+  <!-- КУХНЯ — кольоровий -->
+  <div class="room" id="room-1">
+    <div class="room-header">
+      <div class="room-title">Кухня</div>
+      <button class="room-toggle" id="rtog-1" onclick="toggleRoom(1)">Все увімк</button>
+    </div>
+    <div class="device" id="dev-1">
+      <div class="dev-header">
+        <div class="dev-name"><span class="dev-dot"></span>Підсвітка</div>
+        <label class="toggle"><input type="checkbox" id="sw-1" onchange="toggleDev(1)"><span class="toggle-slider"></span></label>
       </div>
-      <div class="section-label">Яскравість</div>
-      <div class="ctrl-row">
-        <label>Яскравість</label>
-        <input type="range" min="1" max="100" step="1" value="${s.br}" id="br-${room.id}-${di}" oninput="onBr(${ri},${di},this.value)">
-        <div class="val" id="brv-${room.id}-${di}">${s.br}%</div>
-      </div>`;
-    } else {
-      // COLOR LAMP — hue + sat + brightness
-      h+=`<div class="section-label">Колір</div>
-      <div class="hue-strip" id="hstrip-${room.id}-${di}">
-        <div class="hue-thumb" id="hthumb-${room.id}-${di}" style="left:${(s.hue/360*100).toFixed(1)}%;background:hsl(${s.hue},100%,50%)"></div>
-      </div>
-      <div class="ctrl-row">
-        <label>Насиченість</label>
-        <input type="range" min="0" max="100" step="1" value="${s.sat}" id="sat-${room.id}-${di}" oninput="onSat(${ri},${di},this.value)">
-        <div class="val" id="satv-${room.id}-${di}">${s.sat}%</div>
-      </div>
-      <div class="ctrl-row">
-        <label>Яскравість</label>
-        <input type="range" min="1" max="100" step="1" value="${s.br}" id="br-${room.id}-${di}" oninput="onBr(${ri},${di},this.value)">
-        <div class="val" id="brv-${room.id}-${di}">${s.br}%</div>
-      </div>
-      <div class="preview-row">
-        <div class="preview-sq" id="prev-${room.id}-${di}" style="background:${hex}"></div>
-        <div class="preview-txt" id="prevtxt-${room.id}-${di}">RGB: ${r}, ${g}, ${b}</div>
-      </div>`;
-    }
-
-    h+=`</div>`;
-  });
-
-  if(room.hasPir) {
-    h+=`<div class="pir-card">
-      <div class="pir-head">PIR сенсор · Гараж</div>
-      <div class="pir-body">
-        <div>
-          <div class="pir-info-txt">Автоматика руху</div>
-          <div class="pir-info-sub">Вмикати лампу при русі</div>
+      <div class="color-section">
+        <div class="section-label">Колір</div>
+        <div class="color-btns">
+          <button class="color-btn col-r active" onclick="setColor(1,'r',this)">● Червоний</button>
+          <button class="color-btn col-g" onclick="setColor(1,'g',this)">● Зелений</button>
+          <button class="color-btn col-b" onclick="setColor(1,'b',this)">● Синій</button>
         </div>
-        <label class="tog">
-          <input type="checkbox" id="pir-tog" ${pirEnabled?'checked':''} ${ready?'':'disabled'} onchange="sendPir(this.checked)">
-          <span class="tog-track"></span>
-        </label>
       </div>
-      <div class="pir-stat${pirEnabled?' ok':''}" id="pir-stat">${pirEnabled?'активний — реагує на рух':'вимкнений'}</div>
-    </div>`;
-  }
+      <div class="bright-section">
+        <div class="section-label">Яскравість</div>
+        <div class="bright-row">
+          <input type="range" min="0" max="100" value="80" id="br-1" oninput="setBright(1,this.value)">
+          <div class="bright-val" id="brv-1">80%</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  el.innerHTML=h;
+  <!-- ГАРДЕРОБ — білий -->
+  <div class="room" id="room-2">
+    <div class="room-header">
+      <div class="room-title">Гардероб</div>
+      <button class="room-toggle" id="rtog-2" onclick="toggleRoom(2)">Все увімк</button>
+    </div>
+    <div class="device" id="dev-2">
+      <div class="dev-header">
+        <div class="dev-name"><span class="dev-dot"></span>Лампа</div>
+        <label class="toggle"><input type="checkbox" id="sw-2" onchange="toggleDev(2)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="color-section">
+        <div class="section-label">Температура білого</div>
+        <div class="color-btns">
+          <button class="color-btn temp-warm" onclick="setWhite(2,'warm',this)">☀ Тепле</button>
+          <button class="color-btn temp-neutral active" onclick="setWhite(2,'neutral',this)">◎ Нейтральне</button>
+          <button class="color-btn temp-cold" onclick="setWhite(2,'cold',this)">❄ Холодне</button>
+        </div>
+      </div>
+      <div class="bright-section">
+        <div class="section-label">Яскравість</div>
+        <div class="bright-row">
+          <input type="range" min="0" max="100" value="80" id="br-2" oninput="setBright(2,this.value)">
+          <div class="bright-val" id="brv-2">80%</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  // Hue strip drag
-  DEV_NAMES.forEach((_,di)=>{
-    if(di!==1) return;
-    const strip=document.getElementById(`hstrip-${room.id}-${di}`);
-    if(!strip) return;
-    let drag=false;
-    const upd=e=>{
-      const rect=strip.getBoundingClientRect();
-      const x=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
-      const ratio=Math.max(0,Math.min(1,x/rect.width));
-      S[ri][di].hue=Math.round(ratio*360);
-      updateColorUI(ri,di);
-      autoSend(ri,di);
+  <!-- ГАРАЖ — білий + PIR -->
+  <div class="room" id="room-3">
+    <div class="room-header">
+      <div class="room-title">Гараж</div>
+      <button class="room-toggle" id="rtog-3" onclick="toggleRoom(3)">Все увімк</button>
+    </div>
+    <div class="device" id="dev-3">
+      <div class="dev-header">
+        <div class="dev-name"><span class="dev-dot"></span>Лампа</div>
+        <label class="toggle"><input type="checkbox" id="sw-3" onchange="toggleDev(3)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="color-section">
+        <div class="section-label">Температура білого</div>
+        <div class="color-btns">
+          <button class="color-btn temp-warm" onclick="setWhite(3,'warm',this)">☀ Тепле</button>
+          <button class="color-btn temp-neutral active" onclick="setWhite(3,'neutral',this)">◎ Нейтральне</button>
+          <button class="color-btn temp-cold" onclick="setWhite(3,'cold',this)">❄ Холодне</button>
+        </div>
+      </div>
+      <div class="bright-section">
+        <div class="section-label">Яскравість</div>
+        <div class="bright-row">
+          <input type="range" min="0" max="100" value="80" id="br-3" oninput="setBright(3,this.value)">
+          <div class="bright-val" id="brv-3">80%</div>
+        </div>
+      </div>
+      <div class="pir-row">
+        <div class="pir-label">🔍 PIR автоматика</div>
+        <label class="toggle"><input type="checkbox" id="pir-sw" checked onchange="setPir(this.checked)"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="log-wrap">
+    <div class="log" id="log"><div class="log-line">Ініціалізація...</div></div>
+  </div>
+
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <script>
+    const TOPICS = {
+      all:    'smarthome/yulia/all',
+      status: 'smarthome/yulia/status',
+      pir:    'smarthome/yulia/pir',
+      devs: [
+        'smarthome/yulia/dev/living',
+        'smarthome/yulia/dev/kitchen',
+        'smarthome/yulia/dev/wardrobe',
+        'smarthome/yulia/dev/garage',
+      ]
     };
-    strip.addEventListener('mousedown',e=>{drag=true;upd(e);});
-    strip.addEventListener('touchstart',e=>{drag=true;upd(e);},{passive:true});
-    document.addEventListener('mousemove',e=>{if(drag)upd(e);});
-    document.addEventListener('touchmove',e=>{if(drag)upd(e);},{passive:true});
-    document.addEventListener('mouseup',()=>drag=false);
-    document.addEventListener('touchend',()=>drag=false);
-  });
-}
+    const WHITE = {
+      warm:    {r:255, g:147, b:41},
+      neutral: {r:255, g:244, b:229},
+      cold:    {r:181, g:205, b:255},
+    };
+    const COLORS = {
+      r: {r:255, g:0,   b:0},
+      g: {r:0,   g:255, b:0},
+      b: {r:0,   g:0,   b:255},
+    };
+    const state = [
+      {on:false, r:255, g:244, b:229, br:80},
+      {on:false, r:255, g:0,   b:0,   br:80},
+      {on:false, r:255, g:244, b:229, br:80},
+      {on:false, r:255, g:244, b:229, br:80},
+    ];
+    let client;
 
-function updateColorUI(ri,di) {
-  const room=ROOMS[ri]; const s=S[ri][di];
-  const [r,g,b]=hsvToRgb(s.hue,s.sat,s.br);
-  s.r=r;s.g=g;s.b=b;
-  const hex='#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
-  const th=document.getElementById(`hthumb-${room.id}-${di}`);
-  if(th){th.style.left=(s.hue/360*100).toFixed(1)+'%';th.style.background=`hsl(${s.hue},100%,50%)`;}
-  const pv=document.getElementById(`prev-${room.id}-${di}`);
-  if(pv) pv.style.background=hex;
-  const pt=document.getElementById(`prevtxt-${room.id}-${di}`);
-  if(pt) pt.textContent=`RGB: ${r}, ${g}, ${b}`;
-  const sw=document.getElementById(`sw-${room.id}-${di}`);
-  if(sw&&s.on) sw.style.background=hex;
-}
+    function log(msg, cls) {
+      const el = document.getElementById('log');
+      const d = new Date();
+      const t = [d.getHours(),d.getMinutes(),d.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':');
+      const line = document.createElement('div');
+      line.className = 'log-line'+(cls?' '+cls:'');
+      line.textContent = '['+t+'] '+msg;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+    }
 
-// ── HANDLERS ──────────────────────────────────────────────────────────────────
-let sendTimers={};
-function autoSend(ri,di){
-  const key=`${ri}-${di}`;
-  clearTimeout(sendTimers[key]);
-  sendTimers[key]=setTimeout(()=>sendDev(ri,di),150);
-}
+    function publish(topic, payload) {
+      if (!client || !client.connected) return;
+      client.publish(topic, JSON.stringify(payload));
+    }
 
-function onToggle(ri,di){
-  const id=`tog-${ROOMS[ri].id}-${di}`;
-  S[ri][di].on=document.getElementById(id).checked;
-  sendDev(ri,di);
-  log(`${ROOMS[ri].name} / ${DEV_NAMES[di]}: ${S[ri][di].on?'увімкнено':'вимкнено'}`,'ok');
-}
+    function showRoom(idx) {
+      document.querySelectorAll('.room').forEach((r,i)=>r.classList.toggle('active',i===idx));
+      document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+    }
 
-function onBr(ri,di,v){
-  S[ri][di].br=+v;
-  document.getElementById(`brv-${ROOMS[ri].id}-${di}`).textContent=v+'%';
-  if(di===1) updateColorUI(ri,di);
-  autoSend(ri,di);
-}
+    function updateDevUI(idx) {
+      const s = state[idx];
+      document.getElementById('sw-'+idx).checked = s.on;
+      document.getElementById('dev-'+idx).classList.toggle('on', s.on);
+      document.getElementById('br-'+idx).value = s.br;
+      document.getElementById('brv-'+idx).textContent = s.br+'%';
+    }
 
-function onSat(ri,di,v){
-  S[ri][di].sat=+v;
-  document.getElementById(`satv-${ROOMS[ri].id}-${di}`).textContent=v+'%';
-  updateColorUI(ri,di);
-  autoSend(ri,di);
-}
+    function updateBigButton() {
+      const anyOn = state.some(s => s.on);
+      const btn = document.getElementById('btn-all-off');
+      btn.classList.toggle('lights-on', anyOn);
+      document.getElementById('all-off-label').textContent = anyOn ? 'Увімкнено' : 'Вимкнено';
+      document.getElementById('all-off-sub').textContent = anyOn ? 'натисни щоб вимкнути все' : 'все світло вимкнено';
+    }
 
-function onTempBtn(ri,di,preset){
-  const ks=[K_WARM,K_NEUTRAL,K_COLD];
-  S[ri][di].kelvin=ks[preset];
-  // update button styles
-  const room=ROOMS[ri];
-  for(let i=0;i<3;i++){
-    const btns=document.querySelectorAll(`#pg-${room.id} .temp-btn`);
-    if(btns[i]) btns[i].className='temp-btn'+(i===preset?' sel':'');
-  }
-  sendKelvin(ri,di,ks[preset]);
-  log(`${room.name} / ${DEV_NAMES[di]}: ${['теплий','нейтральний','холодний'][preset]} (${ks[preset]}K)`,'ok');
-}
+    function toggleDev(idx) {
+      state[idx].on = document.getElementById('sw-'+idx).checked;
+      updateDevUI(idx);
+      updateBigButton();
+      publish(TOPICS.devs[idx], {cmd: state[idx].on?'on':'off'});
+      log((state[idx].on?'Увімкнено':'Вимкнено')+' ('+['Зал','Кухня','Гардероб','Гараж'][idx]+')', 'ok');
+    }
 
-// ── NAVIGATION ───────────────────────────────────────────────────────────────
-let currentPage='home';
-function goPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('pg-'+id).classList.add('active');
-  document.querySelector(`.tab[data-pg="${id}"]`).classList.add('active');
-  currentPage=id;
-  const ri=ROOMS.findIndex(r=>r.id===id);
-  if(ri>=0) buildRoom(ri);
-}
+    function toggleRoom(idx) {
+      const btn = document.getElementById('rtog-'+idx);
+      const turnOn = btn.textContent.includes('увімк');
+      state[idx].on = turnOn;
+      updateDevUI(idx);
+      updateBigButton();
+      btn.textContent = turnOn ? 'Все вимк' : 'Все увімк';
+      btn.classList.toggle('on', turnOn);
+      publish(TOPICS.devs[idx], {cmd: turnOn?'on':'off'});
+      log((turnOn?'Кімната увімкнена':'Кімната вимкнена')+' ('+['Зал','Кухня','Гардероб','Гараж'][idx]+')', 'ok');
+    }
 
-function rebuildCurrentPage(){
-  if(currentPage==='home') return;
-  const ri=ROOMS.findIndex(r=>r.id===currentPage);
-  if(ri>=0) buildRoom(ri);
-}
+    function allOff() {
+      for (let i=0;i<4;i++) {
+        state[i].on = false;
+        updateDevUI(i);
+        document.getElementById('rtog-'+i).textContent = 'Все увімк';
+        document.getElementById('rtog-'+i).classList.remove('on');
+      }
+      updateBigButton();
+      publish(TOPICS.all, {cmd:'off'});
+      log('Все вимкнено 🏠', 'ok');
+    }
 
-// ── LOG ───────────────────────────────────────────────────────────────────────
-function log(msg,cls){
-  const el=document.getElementById('log'); if(!el) return;
-  const d=new Date();
-  const t=[d.getHours(),d.getMinutes(),d.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':');
-  const line=document.createElement('div');
-  line.className='ll'+(cls?' '+cls:'');
-  line.textContent='['+t+'] '+msg;
-  el.appendChild(line); el.scrollTop=el.scrollHeight;
-}
+    function setWhite(idx, temp, btn) {
+      const c = WHITE[temp];
+      state[idx].r=c.r; state[idx].g=c.g; state[idx].b=c.b;
+      btn.closest('.color-btns').querySelectorAll('.color-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      publish(TOPICS.devs[idx], {r:c.r, g:c.g, b:c.b, br:state[idx].br});
+    }
 
-function setConn(state,txt){
-  const el=document.getElementById('conn');
-  el.className='chip '+state;
-  document.getElementById('conn-txt').textContent=txt;
-}
+    function setColor(idx, col, btn) {
+      const c = COLORS[col];
+      state[idx].r=c.r; state[idx].g=c.g; state[idx].b=c.b;
+      btn.closest('.color-btns').querySelectorAll('.color-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      publish(TOPICS.devs[idx], {r:c.r, g:c.g, b:c.b, br:state[idx].br});
+    }
 
-function enableControls(){
-  ready=true;
-  document.getElementById('btn-on').disabled=false;
-  document.getElementById('btn-off').disabled=false;
-}
+    function setBright(idx, val) {
+      state[idx].br = parseInt(val);
+      document.getElementById('brv-'+idx).textContent = val+'%';
+      publish(TOPICS.devs[idx], {r:state[idx].r, g:state[idx].g, b:state[idx].b, br:parseInt(val)});
+    }
 
-// ── MQTT CONNECT ──────────────────────────────────────────────────────────────
-mqtt=window.mqtt.connect('wss://broker.hivemq.com:8884/mqtt',{
-  clientId:'YuliaHome_'+Math.random().toString(16).slice(2,8),
-  clean:true,connectTimeout:10000,reconnectPeriod:4000
-});
+    function setPir(enabled) {
+      publish(TOPICS.pir, {pirEnabled:enabled});
+      log('PIR: '+(enabled?'увімкнено':'вимкнено'), 'ok');
+    }
 
-mqtt.on('connect',()=>{
-  setConn('ok','підключено');
-  log('MQTT підключено!','ok');
-  enableControls();
-  mqtt.subscribe(T_STATUS);
-  mqtt.subscribe(T_ALL);
-  mqtt.subscribe(T_PIR);
-  ROOMS.forEach(r=>{ mqtt.subscribe(rTopic(r.id)); });
-  // request current status
-  pub(T_ALL,{cmd:'status'});
-});
+    function setConn(s,txt) {
+      document.getElementById('conn').className='conn '+s;
+      document.getElementById('conn-text').textContent=txt;
+    }
 
-mqtt.on('message',(topic,payload)=>{
-  const msg=payload.toString();
-  if(topic===T_STATUS){ onStatus(msg); return; }
-  log('← '+topic.split('/').slice(-2).join('/')+': '+msg.slice(0,50));
-});
+    function connect() {
+      setConn('connecting','підключення...');
+      log('Підключення...');
+      client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt',{
+        clientId:'WebPanel_'+Math.random().toString(16).slice(2,8),
+        clean:true, connectTimeout:8000, reconnectPeriod:3000
+      });
+      client.on('connect',()=>{
+        setConn('connected','підключено');
+        log('Підключено!','ok');
+        const btn = document.getElementById('btn-all-off');
+        btn.disabled = false;
+        document.getElementById('all-off-sub').textContent = 'все світло вимкнено';
+        client.subscribe(TOPICS.status);
+      });
+      client.on('message',(_,payload)=>{
+        try {
+          const data = JSON.parse(payload.toString());
+          if (data.devs) {
+            data.devs.forEach((d,i)=>{
+              if(i>=4) return;
+              state[i].on=d.on; state[i].r=d.r; state[i].g=d.g; state[i].b=d.b; state[i].br=d.br;
+              updateDevUI(i);
+            });
+            updateBigButton();
+          }
+        } catch(e){}
+      });
+      client.on('error',err=>{setConn('error','помилка');log('Помилка: '+err.message,'err');});
+      client.on('reconnect',()=>setConn('connecting','перепідключення...'));
+    }
 
-mqtt.on('error',e=>{ setConn('err','помилка'); log('Помилка: '+e.message,'err'); });
-mqtt.on('reconnect',()=>setConn('connecting','перепідключення...'));
-
-refreshUI();
-</script>
+    connect();
+  </script>
 </body>
 </html>
