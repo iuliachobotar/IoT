@@ -271,7 +271,7 @@
   // ── ЗАХИСТ ВІД ПЕТЛІ (дриготіння) ────────────────────────
   // Після будь-якої локальної дії ігноруємо статус від ESP на 1.5с
   let ignoreStatusUntil = 0;
-  function localAction() { ignoreStatusUntil = Date.now() + 1500; }
+  function localAction() { ignoreStatusUntil = Date.now() + 3000; }
 
   // ── MQTT pub ──────────────────────────────────────────────
   function pub(topic, msg) {
