@@ -11,6 +11,7 @@
     :root {
       --bg: #0a0a0f;
       --surface: #13131a;
+      --surface2: #1c1c26;
       --border: #2a2a38;
       --accent: #f5c400;
       --accent-dim: rgba(245,196,0,0.12);
@@ -30,8 +31,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 2rem 1rem;
+      padding: 2rem 1rem 3rem;
     }
 
     body::before {
@@ -42,9 +42,10 @@
       pointer-events: none;
     }
 
-    .wrap { width: 100%; max-width: 360px; }
+    .wrap { width: 100%; max-width: 380px; }
 
-    header { text-align: center; margin-bottom: 2.5rem; }
+    /* HEADER */
+    header { text-align: center; margin-bottom: 2rem; }
     header .label {
       font-family: var(--mono);
       font-size: 11px;
@@ -53,12 +54,7 @@
       text-transform: uppercase;
       margin-bottom: 0.5rem;
     }
-    header h1 {
-      font-size: 28px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--text);
-    }
+    header h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
     header h1 span { color: var(--accent); }
 
     .conn {
@@ -80,6 +76,7 @@
     .conn.connecting .conn-dot { animation: blink 1s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
+    /* BIG BULB CARD */
     .bulb-wrap {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -90,10 +87,10 @@
       transition: border-color 0.4s;
       position: relative;
       overflow: hidden;
+      cursor: pointer;
+      width: 100%;
     }
-    .bulb-wrap.on {
-      border-color: rgba(245,196,0,0.4);
-    }
+    .bulb-wrap.on { border-color: rgba(245,196,0,0.4); }
     .bulb-wrap::before {
       content: '';
       position: absolute;
@@ -107,63 +104,134 @@
       pointer-events: none;
     }
     .bulb-wrap.on::before { opacity: 0.18; }
-
     .bulb-svg { width: 90px; height: 90px; margin: 0 auto 1.25rem; display: block; }
     .bulb-body { transition: fill 0.4s; fill: #2a2a38; }
     .bulb-glow { transition: opacity 0.4s; opacity: 0; }
     .on .bulb-body { fill: var(--accent); }
     .on .bulb-glow { opacity: 1; }
+    .state-label { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 0.25rem; }
+    .state-sub { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 
-    .state-label {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      margin-bottom: 0.25rem;
+    /* TABS */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1.25rem;
+      overflow-x: auto;
+      padding-bottom: 2px;
     }
-    .state-sub {
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
-    .btn {
-      padding: 14px 0;
+    .tab {
+      flex: 1;
+      min-width: 70px;
+      padding: 9px 4px;
       font-family: var(--display);
-      font-size: 15px;
+      font-size: 12px;
       font-weight: 700;
-      border-radius: 14px;
+      border-radius: 12px;
       border: 1px solid var(--border);
-      cursor: pointer;
-      transition: all 0.15s;
       background: var(--surface);
       color: var(--muted);
-      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+      white-space: nowrap;
     }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-on:not(:disabled):hover { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
-    .btn-off:not(:disabled):hover { background: rgba(255,255,255,0.05); border-color: #555; color: var(--text); }
-    .btn:not(:disabled):active { transform: scale(0.96); }
-    .btn-on:not(:disabled) { border-color: rgba(245,196,0,0.3); color: var(--accent); }
+    .tab.active { background: var(--accent-dim); border-color: rgba(245,196,0,.4); color: var(--accent); }
+    .tab:hover:not(.active) { color: var(--text); border-color: #444; }
 
+    /* ROOM PANEL */
+    .room { display: none; }
+    .room.active { display: block; }
+
+    .room-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .room-title { font-size: 18px; font-weight: 800; }
+
+    .room-btn {
+      padding: 8px 14px;
+      font-family: var(--display);
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .room-btn:active { transform: scale(0.96); }
+
+    /* DEVICE CARD */
+    .device {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.1rem 1.25rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      transition: border-color 0.3s;
+    }
+    .device.on { border-color: rgba(245,196,0,.3); }
+    .dev-info { display: flex; align-items: center; gap: 10px; }
+    .dev-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.3s;
+      flex-shrink: 0;
+    }
+    .device.on .dev-dot { background: var(--accent); box-shadow: 0 0 6px rgba(245,196,0,.5); }
+    .dev-name { font-size: 14px; font-weight: 700; }
+    .dev-type { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    /* TOGGLE SWITCH */
+    .toggle { position: relative; width: 44px; height: 24px; cursor: pointer; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: #2a2a38;
+      border-radius: 999px;
+      transition: .3s;
+    }
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; top: 3px;
+      background: #6b6b80;
+      border-radius: 50%;
+      transition: .3s;
+    }
+    .toggle input:checked + .toggle-slider { background: rgba(245,196,0,.2); border: 1px solid rgba(245,196,0,.5); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: var(--accent); }
+
+    /* LOG */
     .log {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 1rem;
       font-family: var(--mono);
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
-      min-height: 90px;
-      max-height: 130px;
+      min-height: 80px;
+      max-height: 120px;
       overflow-y: auto;
+      margin-top: 1.5rem;
     }
     .log-line { padding: 2px 0; }
     .log-line.ok { color: var(--green); }
     .log-line.err { color: var(--red); }
 
     footer {
-      margin-top: 2rem;
+      margin-top: 1.5rem;
       font-family: var(--mono);
       font-size: 11px;
       color: var(--muted);
@@ -183,7 +251,8 @@
       </div>
     </header>
 
-    <div class="bulb-wrap" id="bulb-wrap">
+    <!-- ВЕЛИКА КНОПКА ЛАМПОЧКИ -->
+    <div class="bulb-wrap" id="bulb-wrap" onclick="allOff()">
       <svg class="bulb-svg" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="45" cy="38" r="26" class="bulb-body" />
         <circle cx="45" cy="38" r="26" class="bulb-glow" fill="var(--accent)" opacity="0.35"/>
@@ -200,76 +269,223 @@
       <div class="state-sub" id="state-sub">очікування підключення</div>
     </div>
 
-    <div class="btns">
-      <button class="btn btn-on" id="btn-on" onclick="sendCmd('ON')" disabled>💡 Увімкнути</button>
-      <button class="btn btn-off" id="btn-off" onclick="sendCmd('OFF')" disabled>✕ Вимкнути</button>
+    <!-- ТАБИ -->
+    <div class="tabs">
+      <div class="tab active" onclick="showRoom(0)">🛋 Зал</div>
+      <div class="tab" onclick="showRoom(1)">🍳 Кухня</div>
+      <div class="tab" onclick="showRoom(2)">🚗 Гараж</div>
+      <div class="tab" onclick="showRoom(3)">👗 Гардероб</div>
+    </div>
+
+    <!-- ЗАЛ -->
+    <div class="room active" id="room-0">
+      <div class="room-header">
+        <div class="room-title">Зал</div>
+        <button class="room-btn" onclick="toggleRoom(0)">Все вимк</button>
+      </div>
+      <div class="device" id="dev-0-0">
+        <div class="dev-info">
+          <div class="dev-dot"></div>
+          <div><div class="dev-name">Люстра</div><div class="dev-type">білий</div></div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="sw-0-0" onchange="toggleDev(0,0)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="device" id="dev-0-1">
+        <div class="dev-info">
+          <div class="dev-dot"></div>
+          <div><div class="dev-name">Підсвітка</div><div class="dev-type">жовтий</div></div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="sw-0-1" onchange="toggleDev(0,1)"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <!-- КУХНЯ -->
+    <div class="room" id="room-1">
+      <div class="room-header">
+        <div class="room-title">Кухня</div>
+        <button class="room-btn" onclick="toggleRoom(1)">Все вимк</button>
+      </div>
+      <div class="device" id="dev-1-0">
+        <div class="dev-info">
+          <div class="dev-dot"></div>
+          <div><div class="dev-name">Лампа</div><div class="dev-type">білий</div></div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="sw-1-0" onchange="toggleDev(1,0)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="device" id="dev-1-1">
+        <div class="dev-info">
+          <div class="dev-dot"></div>
+          <div><div class="dev-name">Підсвітка</div><div class="dev-type">помаранчевий</div></div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="sw-1-1" onchange="toggleDev(1,1)"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <!-- ГАРАЖ -->
+    <div class="room" id="room-2">
+      <div class="room-header">
+        <div class="room-title">Гараж</div>
+        <button class="room-btn" onclick="toggleRoom(2)">Все вимк</button>
+      </div>
+      <div class="device" id="dev-2-0">
+        <div class="dev-info">
+          <div class="dev-dot"></div>
+          <div><div class="dev-name">Лампа</div><div class="dev-type">білий</div></div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="sw-2-0" onchange="toggleDev(2,0)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="device" id="dev-2-1">
+        <div class="dev-info">
+          <div class="dev-dot"></div>
+          <div><div class="dev-name">Підсвітка</div><div class="dev-type">синій</div></div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="sw-2-1" onchange="toggleDev(2,1)"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <!-- ГАРДЕРОБ -->
+    <div class="room" id="room-3">
+      <div class="room-header">
+        <div class="room-title">Гардероб</div>
+        <button class="room-btn" onclick="toggleRoom(3)">Все вимк</button>
+      </div>
+      <div class="device" id="dev-3-0">
+        <div class="dev-info">
+          <div class="dev-dot"></div>
+          <div><div class="dev-name">Лампа</div><div class="dev-type">білий</div></div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="sw-3-0" onchange="toggleDev(3,0)"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="device" id="dev-3-1">
+        <div class="dev-info">
+          <div class="dev-dot"></div>
+          <div><div class="dev-name">Нічник</div><div class="dev-type">зелений</div></div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="sw-3-1" onchange="toggleDev(3,1)"><span class="toggle-slider"></span></label>
+      </div>
     </div>
 
     <div class="log" id="log"><div class="log-line">Ініціалізація...</div></div>
 
-    <footer>MQTT · broker.hivemq.com · smarthome/light/yulia</footer>
+    <footer>MQTT · broker.hivemq.com · smarthome/yulia</footer>
   </div>
 
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script>
-    const TOPIC = 'smarthome/light/yulia';
-    const CLIENT_ID = 'WebPanel_' + Math.random().toString(16).slice(2,8);
-    let client, lightOn = false;
+    const ROOMS = ['living','kitchen','garage','wardrobe'];
+    const TOPIC_ALL    = 'smarthome/yulia/all';
+    const TOPIC_STATUS = 'smarthome/yulia/status';
+    const CLIENT_ID    = 'WebPanel_' + Math.random().toString(16).slice(2,8);
+
+    // стан [room][dev]
+    const state = [[false,false],[false,false],[false,false],[false,false]];
+    let client, ready = false;
 
     function log(msg, cls) {
       const el = document.getElementById('log');
-      const d = new Date();
-      const t = [d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2,'0')).join(':');
+      const d  = new Date();
+      const t  = [d.getHours(),d.getMinutes(),d.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':');
       const line = document.createElement('div');
-      line.className = 'log-line' + (cls ? ' ' + cls : '');
-      line.textContent = '[' + t + '] ' + msg;
+      line.className = 'log-line' + (cls ? ' '+cls : '');
+      line.textContent = '['+t+'] '+msg;
       el.appendChild(line);
       el.scrollTop = el.scrollHeight;
     }
 
-    function setConn(state, txt) {
-      const el = document.getElementById('conn');
-      el.className = 'conn ' + state;
+    function publish(topic, msg) {
+      if (!client || !client.connected) return;
+      client.publish(topic, msg);
+    }
+
+    function anyOn() { return state.some(r => r.some(d => d)); }
+
+    function updateBulb() {
+      const on = anyOn();
+      document.getElementById('bulb-wrap').classList.toggle('on', on);
+      document.getElementById('state-label').textContent = on ? 'Увімкнено' : 'Вимкнено';
+      document.getElementById('state-sub').textContent   = on ? 'натисни щоб вимкнути все' : 'все світло вимкнено';
+    }
+
+    function updateDevUI(r, d) {
+      const on = state[r][d];
+      document.getElementById('sw-'+r+'-'+d).checked = on;
+      document.getElementById('dev-'+r+'-'+d).classList.toggle('on', on);
+    }
+
+    function toggleDev(r, d) {
+      if (!ready) return;
+      state[r][d] = document.getElementById('sw-'+r+'-'+d).checked;
+      updateDevUI(r, d);
+      updateBulb();
+      publish('smarthome/yulia/'+ROOMS[r]+'/'+d, state[r][d] ? 'ON' : 'OFF');
+      log((state[r][d]?'Увімкнено':'Вимкнено')+' '+['Зал','Кухня','Гараж','Гардероб'][r]+' dev'+d, 'ok');
+    }
+
+    function toggleRoom(r) {
+      if (!ready) return;
+      const allOn = state[r].every(d => d);
+      const newVal = !allOn;
+      state[r] = [newVal, newVal];
+      for (let d=0; d<2; d++) updateDevUI(r, d);
+      updateBulb();
+      publish('smarthome/yulia/'+ROOMS[r]+'/all', newVal ? 'ON' : 'OFF');
+      log((newVal?'Кімната увімкнена':'Кімната вимкнена')+' ('+['Зал','Кухня','Гараж','Гардероб'][r]+')', 'ok');
+    }
+
+    function allOff() {
+      if (!ready) return;
+      for (let r=0; r<4; r++) {
+        state[r] = [false, false];
+        for (let d=0; d<2; d++) updateDevUI(r, d);
+      }
+      updateBulb();
+      publish(TOPIC_ALL, 'OFF');
+      log('Все вимкнено 🏠', 'ok');
+    }
+
+    function showRoom(idx) {
+      document.querySelectorAll('.room').forEach((el,i) => el.classList.toggle('active', i===idx));
+      document.querySelectorAll('.tab').forEach((el,i)  => el.classList.toggle('active', i===idx));
+    }
+
+    function setConn(s, txt) {
+      document.getElementById('conn').className = 'conn '+s;
       document.getElementById('conn-text').textContent = txt;
     }
 
-    function setLight(on) {
-      lightOn = on;
-      const wrap = document.getElementById('bulb-wrap');
-      wrap.className = 'bulb-wrap' + (on ? ' on' : '');
-      document.getElementById('state-label').textContent = on ? 'Увімкнено' : 'Вимкнено';
-      document.getElementById('state-sub').textContent = on ? 'LED горить на ESP32' : 'LED вимкнений';
-    }
-
-    function sendCmd(cmd) {
-      if (!client || !client.connected) { log('Не підключено', 'err'); return; }
-      client.publish(TOPIC, cmd, { qos: 0, retain: false }, err => {
-        if (err) log('Помилка: ' + err, 'err');
-        else { log('Відправлено: ' + cmd, 'ok'); setLight(cmd === 'ON'); }
-      });
+    // Парсимо статус від ESP32
+    function applyStatus(json) {
+      try {
+        const data = JSON.parse(json);
+        ROOMS.forEach((rm, r) => {
+          for (let d=0; d<2; d++) {
+            const key = rm+'_'+d;
+            if (key in data) { state[r][d] = data[key]; updateDevUI(r,d); }
+          }
+        });
+        updateBulb();
+      } catch(e) {}
     }
 
     function connect() {
-      setConn('connecting', 'підключення...');
+      setConn('connecting','підключення...');
       log('Підключення до broker.hivemq.com...');
       client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt', {
         clientId: CLIENT_ID, clean: true, connectTimeout: 8000, reconnectPeriod: 3000
       });
       client.on('connect', () => {
-        setConn('connected', 'підключено');
-        log('Підключено! Топік: ' + TOPIC, 'ok');
-        document.getElementById('btn-on').disabled = false;
-        document.getElementById('btn-off').disabled = false;
-        document.getElementById('state-sub').textContent = 'готово до керування';
-        client.subscribe(TOPIC);
+        setConn('connected','підключено');
+        log('Підключено!', 'ok');
+        ready = true;
+        document.getElementById('state-sub').textContent = 'все світло вимкнено';
+        client.subscribe(TOPIC_STATUS);
       });
-      client.on('message', (_, payload) => {
-        const msg = payload.toString();
-        log('Отримано: ' + msg);
-        setLight(msg === 'ON');
+      client.on('message', (topic, payload) => {
+        if (topic === TOPIC_STATUS) applyStatus(payload.toString());
       });
-      client.on('error', err => { setConn('error', 'помилка'); log('Помилка: ' + err.message, 'err'); });
-      client.on('reconnect', () => { setConn('connecting', 'перепідключення...'); log('Перепідключення...'); });
+      client.on('error', err => { setConn('error','помилка'); log('Помилка: '+err.message,'err'); });
+      client.on('reconnect', () => { setConn('connecting','перепідключення...'); log('Перепідключення...'); });
+      client.on('disconnect', () => { ready = false; });
     }
 
     connect();
