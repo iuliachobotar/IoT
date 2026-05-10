@@ -7,102 +7,32 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0a0a0f;
-      --surface: #13131a;
-      --surface2: #1c1c26;
-      --border: #2a2a38;
-      --accent: #f5c400;
-      --accent-dim: rgba(245,196,0,0.12);
-      --text: #e8e8f0;
-      --muted: #6b6b80;
-      --green: #1dbd8a;
-      --red: #e24b4a;
-      --mono: 'Space Mono', monospace;
-      --display: 'Syne', sans-serif;
+      --bg: #0a0a0f; --surface: #13131a; --surface2: #1c1c26;
+      --border: #2a2a38; --accent: #f5c400; --accent-dim: rgba(245,196,0,0.12);
+      --text: #e8e8f0; --muted: #6b6b80; --green: #1dbd8a; --red: #e24b4a;
+      --mono: 'Space Mono', monospace; --display: 'Syne', sans-serif;
     }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--display);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem 3rem;
-    }
-
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(245,196,0,0.06) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
+    body { background: var(--bg); color: var(--text); font-family: var(--display); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem 3rem; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(245,196,0,0.06) 0%, transparent 70%); pointer-events: none; }
     .wrap { width: 100%; max-width: 380px; }
 
     /* HEADER */
     header { text-align: center; margin-bottom: 2rem; }
-    header .label {
-      font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 0.5rem;
-    }
+    header .label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; margin-bottom: 0.5rem; }
     header h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
     header h1 span { color: var(--accent); }
-
-    .conn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: var(--mono);
-      font-size: 11px;
-      padding: 4px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      margin-top: 0.75rem;
-      transition: all 0.3s;
-    }
+    .conn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); margin-top: 0.75rem; transition: all 0.3s; }
     .conn.connected { border-color: var(--green); color: var(--green); }
     .conn.error { border-color: var(--red); color: var(--red); }
     .conn-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
     .conn.connecting .conn-dot { animation: blink 1s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
-    /* BIG BULB CARD */
-    .bulb-wrap {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 2.5rem 1.5rem;
-      text-align: center;
-      margin-bottom: 1.5rem;
-      transition: border-color 0.4s;
-      position: relative;
-      overflow: hidden;
-      cursor: pointer;
-      width: 100%;
-    }
+    /* BIG BULB */
+    .bulb-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 2.5rem 1.5rem; text-align: center; margin-bottom: 1.5rem; transition: border-color 0.4s; position: relative; overflow: hidden; cursor: pointer; width: 100%; }
     .bulb-wrap.on { border-color: rgba(245,196,0,0.4); }
-    .bulb-wrap::before {
-      content: '';
-      position: absolute;
-      top: -40px; left: 50%; transform: translateX(-50%);
-      width: 200px; height: 200px;
-      border-radius: 50%;
-      background: var(--accent);
-      opacity: 0;
-      filter: blur(60px);
-      transition: opacity 0.5s;
-      pointer-events: none;
-    }
+    .bulb-wrap::before { content: ''; position: absolute; top: -40px; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; border-radius: 50%; background: var(--accent); opacity: 0; filter: blur(60px); transition: opacity 0.5s; pointer-events: none; }
     .bulb-wrap.on::before { opacity: 0.18; }
     .bulb-svg { width: 90px; height: 90px; margin: 0 auto 1.25rem; display: block; }
     .bulb-body { transition: fill 0.4s; fill: #2a2a38; }
@@ -113,131 +43,55 @@
     .state-sub { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 
     /* TABS */
-    .tabs {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 1.25rem;
-      overflow-x: auto;
-      padding-bottom: 2px;
-    }
-    .tab {
-      flex: 1;
-      min-width: 70px;
-      padding: 9px 4px;
-      font-family: var(--display);
-      font-size: 12px;
-      font-weight: 700;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.15s;
-      text-align: center;
-      white-space: nowrap;
-    }
+    .tabs { display: flex; gap: 6px; margin-bottom: 1.25rem; overflow-x: auto; padding-bottom: 2px; }
+    .tab { flex: 1; min-width: 70px; padding: 9px 4px; font-family: var(--display); font-size: 12px; font-weight: 700; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; transition: all 0.15s; text-align: center; white-space: nowrap; }
     .tab.active { background: var(--accent-dim); border-color: rgba(245,196,0,.4); color: var(--accent); }
     .tab:hover:not(.active) { color: var(--text); border-color: #444; }
 
-    /* ROOM PANEL */
+    /* ROOM */
     .room { display: none; }
     .room.active { display: block; }
-
-    .room-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
+    .room-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
     .room-title { font-size: 18px; font-weight: 800; }
-
-    .room-btn {
-      padding: 8px 14px;
-      font-family: var(--display);
-      font-size: 12px;
-      font-weight: 700;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
+    .room-btn { padding: 8px 14px; font-family: var(--display); font-size: 12px; font-weight: 700; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); cursor: pointer; transition: all 0.15s; }
     .room-btn:active { transform: scale(0.96); }
 
-    /* DEVICE CARD */
-    .device {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.1rem 1.25rem;
-      margin-bottom: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      transition: border-color 0.3s;
-    }
+    /* DEVICE */
+    .device { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem 1.25rem; margin-bottom: 0.75rem; transition: border-color 0.3s; }
     .device.on { border-color: rgba(245,196,0,.3); }
+    .dev-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
     .dev-info { display: flex; align-items: center; gap: 10px; }
-    .dev-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: var(--border);
-      transition: background 0.3s;
-      flex-shrink: 0;
-    }
+    .dev-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); transition: background 0.3s; flex-shrink: 0; }
     .device.on .dev-dot { background: var(--accent); box-shadow: 0 0 6px rgba(245,196,0,.5); }
     .dev-name { font-size: 14px; font-weight: 700; }
     .dev-type { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
 
-    /* TOGGLE SWITCH */
+    /* TOGGLE */
     .toggle { position: relative; width: 44px; height: 24px; cursor: pointer; flex-shrink: 0; }
     .toggle input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider {
-      position: absolute; inset: 0;
-      background: #2a2a38;
-      border-radius: 999px;
-      transition: .3s;
-    }
-    .toggle-slider::before {
-      content: '';
-      position: absolute;
-      width: 18px; height: 18px;
-      left: 3px; top: 3px;
-      background: #6b6b80;
-      border-radius: 50%;
-      transition: .3s;
-    }
+    .toggle-slider { position: absolute; inset: 0; background: #2a2a38; border-radius: 999px; transition: .3s; }
+    .toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #6b6b80; border-radius: 50%; transition: .3s; }
     .toggle input:checked + .toggle-slider { background: rgba(245,196,0,.2); border: 1px solid rgba(245,196,0,.5); }
     .toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: var(--accent); }
 
+    /* RGB BUTTONS */
+    .rgb-row { display: flex; gap: 8px; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .rgb-btn { flex: 1; padding: 10px 4px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); font-family: var(--display); font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .rgb-btn:active { transform: scale(0.95); }
+    .btn-r { color: #e24b4a; }
+    .btn-r.on { border-color: #e24b4a; background: rgba(226,75,74,.15); box-shadow: 0 0 8px rgba(226,75,74,.3); }
+    .btn-g { color: #1dbd8a; }
+    .btn-g.on { border-color: #1dbd8a; background: rgba(29,189,138,.15); box-shadow: 0 0 8px rgba(29,189,138,.3); }
+    .btn-b { color: #4a9eff; }
+    .btn-b.on { border-color: #4a9eff; background: rgba(74,158,255,.15); box-shadow: 0 0 8px rgba(74,158,255,.3); }
+
     /* LOG */
-    .log {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1rem;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      min-height: 80px;
-      max-height: 120px;
-      overflow-y: auto;
-      margin-top: 1.5rem;
-    }
+    .log { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1rem; font-family: var(--mono); font-size: 11px; color: var(--muted); min-height: 80px; max-height: 120px; overflow-y: auto; margin-top: 1.5rem; }
     .log-line { padding: 2px 0; }
     .log-line.ok { color: var(--green); }
     .log-line.err { color: var(--red); }
 
-    footer {
-      margin-top: 1.5rem;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      text-align: center;
-      letter-spacing: 0.05em;
-    }
+    footer { margin-top: 1.5rem; font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: center; letter-spacing: 0.05em; }
   </style>
 </head>
 <body>
@@ -251,7 +105,7 @@
       </div>
     </header>
 
-    <!-- ВЕЛИКА КНОПКА ЛАМПОЧКИ -->
+    <!-- ВЕЛИКА ЛАМПОЧКА -->
     <div class="bulb-wrap" id="bulb-wrap" onclick="allOff()">
       <svg class="bulb-svg" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="45" cy="38" r="26" class="bulb-body" />
@@ -281,21 +135,25 @@
     <div class="room active" id="room-0">
       <div class="room-header">
         <div class="room-title">Зал</div>
-        <button class="room-btn" onclick="toggleRoom(0)">Все вимк</button>
+        <button class="room-btn" onclick="toggleRoom('living')">Все вимк</button>
       </div>
-      <div class="device" id="dev-0-0">
-        <div class="dev-info">
-          <div class="dev-dot"></div>
-          <div><div class="dev-name">Люстра</div><div class="dev-type">білий</div></div>
+      <div class="device" id="d-living-0">
+        <div class="dev-header">
+          <div class="dev-info">
+            <div class="dev-dot"></div>
+            <div><div class="dev-name">Люстра</div><div class="dev-type">біла</div></div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="sw-living-0" onchange="toggleDev('living','0')"><span class="toggle-slider"></span></label>
         </div>
-        <label class="toggle"><input type="checkbox" id="sw-0-0" onchange="toggleDev(0,0)"><span class="toggle-slider"></span></label>
       </div>
-      <div class="device" id="dev-0-1">
-        <div class="dev-info">
-          <div class="dev-dot"></div>
-          <div><div class="dev-name">Підсвітка</div><div class="dev-type">жовтий</div></div>
+      <div class="device" id="d-living-1">
+        <div class="dev-header">
+          <div class="dev-info">
+            <div class="dev-dot"></div>
+            <div><div class="dev-name">Підсвітка</div><div class="dev-type">жовта</div></div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="sw-living-1" onchange="toggleDev('living','1')"><span class="toggle-slider"></span></label>
         </div>
-        <label class="toggle"><input type="checkbox" id="sw-0-1" onchange="toggleDev(0,1)"><span class="toggle-slider"></span></label>
       </div>
     </div>
 
@@ -303,21 +161,30 @@
     <div class="room" id="room-1">
       <div class="room-header">
         <div class="room-title">Кухня</div>
-        <button class="room-btn" onclick="toggleRoom(1)">Все вимк</button>
+        <button class="room-btn" onclick="toggleRoom('kitchen')">Все вимк</button>
       </div>
-      <div class="device" id="dev-1-0">
-        <div class="dev-info">
-          <div class="dev-dot"></div>
-          <div><div class="dev-name">Лампа</div><div class="dev-type">білий</div></div>
+      <div class="device" id="d-kitchen-0">
+        <div class="dev-header">
+          <div class="dev-info">
+            <div class="dev-dot"></div>
+            <div><div class="dev-name">Лампа</div><div class="dev-type">біла</div></div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="sw-kitchen-0" onchange="toggleDev('kitchen','0')"><span class="toggle-slider"></span></label>
         </div>
-        <label class="toggle"><input type="checkbox" id="sw-1-0" onchange="toggleDev(1,0)"><span class="toggle-slider"></span></label>
       </div>
-      <div class="device" id="dev-1-1">
-        <div class="dev-info">
-          <div class="dev-dot"></div>
-          <div><div class="dev-name">Підсвітка</div><div class="dev-type">помаранчевий</div></div>
+      <div class="device" id="d-kitchen-rgb">
+        <div class="dev-header">
+          <div class="dev-info">
+            <div class="dev-dot" id="dot-kitchen-rgb"></div>
+            <div><div class="dev-name">Підсвітка</div><div class="dev-type">RGB</div></div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="sw-kitchen-rgb" onchange="toggleKitchenRGB()"><span class="toggle-slider"></span></label>
         </div>
-        <label class="toggle"><input type="checkbox" id="sw-1-1" onchange="toggleDev(1,1)"><span class="toggle-slider"></span></label>
+        <div class="rgb-row">
+          <button class="rgb-btn btn-r" id="btn-r" onclick="toggleRGB('r')">● Червоний</button>
+          <button class="rgb-btn btn-g" id="btn-g" onclick="toggleRGB('g')">● Зелений</button>
+          <button class="rgb-btn btn-b" id="btn-b" onclick="toggleRGB('b')">● Синій</button>
+        </div>
       </div>
     </div>
 
@@ -325,21 +192,25 @@
     <div class="room" id="room-2">
       <div class="room-header">
         <div class="room-title">Гараж</div>
-        <button class="room-btn" onclick="toggleRoom(2)">Все вимк</button>
+        <button class="room-btn" onclick="toggleRoom('garage')">Все вимк</button>
       </div>
-      <div class="device" id="dev-2-0">
-        <div class="dev-info">
-          <div class="dev-dot"></div>
-          <div><div class="dev-name">Лампа</div><div class="dev-type">білий</div></div>
+      <div class="device" id="d-garage-0">
+        <div class="dev-header">
+          <div class="dev-info">
+            <div class="dev-dot"></div>
+            <div><div class="dev-name">Лампа</div><div class="dev-type">біла</div></div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="sw-garage-0" onchange="toggleDev('garage','0')"><span class="toggle-slider"></span></label>
         </div>
-        <label class="toggle"><input type="checkbox" id="sw-2-0" onchange="toggleDev(2,0)"><span class="toggle-slider"></span></label>
       </div>
-      <div class="device" id="dev-2-1">
-        <div class="dev-info">
-          <div class="dev-dot"></div>
-          <div><div class="dev-name">Підсвітка</div><div class="dev-type">синій</div></div>
+      <div class="device" id="d-garage-1">
+        <div class="dev-header">
+          <div class="dev-info">
+            <div class="dev-dot"></div>
+            <div><div class="dev-name">Підсвітка</div><div class="dev-type">синя</div></div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="sw-garage-1" onchange="toggleDev('garage','1')"><span class="toggle-slider"></span></label>
         </div>
-        <label class="toggle"><input type="checkbox" id="sw-2-1" onchange="toggleDev(2,1)"><span class="toggle-slider"></span></label>
       </div>
     </div>
 
@@ -347,38 +218,41 @@
     <div class="room" id="room-3">
       <div class="room-header">
         <div class="room-title">Гардероб</div>
-        <button class="room-btn" onclick="toggleRoom(3)">Все вимк</button>
+        <button class="room-btn" onclick="toggleRoom('wardrobe')">Все вимк</button>
       </div>
-      <div class="device" id="dev-3-0">
-        <div class="dev-info">
-          <div class="dev-dot"></div>
-          <div><div class="dev-name">Лампа</div><div class="dev-type">білий</div></div>
+      <div class="device" id="d-wardrobe-0">
+        <div class="dev-header">
+          <div class="dev-info">
+            <div class="dev-dot"></div>
+            <div><div class="dev-name">Лампа</div><div class="dev-type">біла</div></div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="sw-wardrobe-0" onchange="toggleDev('wardrobe','0')"><span class="toggle-slider"></span></label>
         </div>
-        <label class="toggle"><input type="checkbox" id="sw-3-0" onchange="toggleDev(3,0)"><span class="toggle-slider"></span></label>
       </div>
-      <div class="device" id="dev-3-1">
-        <div class="dev-info">
-          <div class="dev-dot"></div>
-          <div><div class="dev-name">Нічник</div><div class="dev-type">зелений</div></div>
+      <div class="device" id="d-wardrobe-1">
+        <div class="dev-header">
+          <div class="dev-info">
+            <div class="dev-dot"></div>
+            <div><div class="dev-name">Нічник</div><div class="dev-type">зелений</div></div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="sw-wardrobe-1" onchange="toggleDev('wardrobe','1')"><span class="toggle-slider"></span></label>
         </div>
-        <label class="toggle"><input type="checkbox" id="sw-3-1" onchange="toggleDev(3,1)"><span class="toggle-slider"></span></label>
       </div>
     </div>
 
     <div class="log" id="log"><div class="log-line">Ініціалізація...</div></div>
-
     <footer>MQTT · broker.hivemq.com · smarthome/yulia</footer>
   </div>
 
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script>
-    const ROOMS = ['living','kitchen','garage','wardrobe'];
-    const TOPIC_ALL    = 'smarthome/yulia/all';
-    const TOPIC_STATUS = 'smarthome/yulia/status';
+    const BASE         = 'smarthome/yulia';
+    const TOPIC_ALL    = BASE + '/all';
+    const TOPIC_STATUS = BASE + '/status';
     const CLIENT_ID    = 'WebPanel_' + Math.random().toString(16).slice(2,8);
 
-    // стан [room][dev]
-    const state = [[false,false],[false,false],[false,false],[false,false]];
+    const sw  = {};
+    const rgb = { r: false, g: false, b: false };
     let client, ready = false;
 
     function log(msg, cls) {
@@ -392,12 +266,14 @@
       el.scrollTop = el.scrollHeight;
     }
 
-    function publish(topic, msg) {
+    function pub(topic, msg) {
       if (!client || !client.connected) return;
       client.publish(topic, msg);
     }
 
-    function anyOn() { return state.some(r => r.some(d => d)); }
+    function anyOn() {
+      return Object.values(sw).some(v=>v) || Object.values(rgb).some(v=>v);
+    }
 
     function updateBulb() {
       const on = anyOn();
@@ -406,40 +282,97 @@
       document.getElementById('state-sub').textContent   = on ? 'натисни щоб вимкнути все' : 'все світло вимкнено';
     }
 
-    function updateDevUI(r, d) {
-      const on = state[r][d];
-      document.getElementById('sw-'+r+'-'+d).checked = on;
-      document.getElementById('dev-'+r+'-'+d).classList.toggle('on', on);
+    function updateRGBui() {
+      const anyRgb = rgb.r || rgb.g || rgb.b;
+      // тогл підсвітки
+      const swRgb = document.getElementById('sw-kitchen-rgb');
+      if (swRgb) swRgb.checked = anyRgb;
+      // карточка
+      document.getElementById('d-kitchen-rgb').classList.toggle('on', anyRgb);
+      document.getElementById('dot-kitchen-rgb').style.background = anyRgb ? 'var(--accent)' : '';
+      document.getElementById('dot-kitchen-rgb').style.boxShadow  = anyRgb ? '0 0 6px rgba(245,196,0,.5)' : '';
+      // кнопки кольорів
+      ['r','g','b'].forEach(c => {
+        document.getElementById('btn-'+c).classList.toggle('on', rgb[c]);
+      });
     }
 
-    function toggleDev(r, d) {
-      if (!ready) return;
-      state[r][d] = document.getElementById('sw-'+r+'-'+d).checked;
-      updateDevUI(r, d);
-      updateBulb();
-      publish('smarthome/yulia/'+ROOMS[r]+'/'+d, state[r][d] ? 'ON' : 'OFF');
-      log((state[r][d]?'Увімкнено':'Вимкнено')+' '+['Зал','Кухня','Гараж','Гардероб'][r]+' dev'+d, 'ok');
+    function updateDevUI(room, dev) {
+      const key = room+'-'+dev;
+      const on  = sw[key] || false;
+      const swEl = document.getElementById('sw-'+room+'-'+dev);
+      const dEl  = document.getElementById('d-'+room+'-'+dev);
+      if (swEl) swEl.checked = on;
+      if (dEl)  dEl.classList.toggle('on', on);
     }
 
-    function toggleRoom(r) {
+    function toggleDev(room, dev) {
       if (!ready) return;
-      const allOn = state[r].every(d => d);
-      const newVal = !allOn;
-      state[r] = [newVal, newVal];
-      for (let d=0; d<2; d++) updateDevUI(r, d);
+      const key = room+'-'+dev;
+      sw[key] = document.getElementById('sw-'+room+'-'+dev).checked;
+      updateDevUI(room, dev);
       updateBulb();
-      publish('smarthome/yulia/'+ROOMS[r]+'/all', newVal ? 'ON' : 'OFF');
-      log((newVal?'Кімната увімкнена':'Кімната вимкнена')+' ('+['Зал','Кухня','Гараж','Гардероб'][r]+')', 'ok');
+      pub(BASE+'/'+room+'/'+dev, sw[key] ? 'ON' : 'OFF');
+      log((sw[key]?'Увімкнено':'Вимкнено')+' '+room+' '+dev, 'ok');
+    }
+
+    // Головний тогл підсвітки — вмикає/вимикає всі три кольори
+    function toggleKitchenRGB() {
+      if (!ready) return;
+      const on = document.getElementById('sw-kitchen-rgb').checked;
+      rgb.r = rgb.g = rgb.b = on;
+      updateRGBui();
+      updateBulb();
+      pub(BASE+'/kitchen/r', on ? 'ON' : 'OFF');
+      pub(BASE+'/kitchen/g', on ? 'ON' : 'OFF');
+      pub(BASE+'/kitchen/b', on ? 'ON' : 'OFF');
+      log((on?'Підсвітку увімкнено':'Підсвітку вимкнено')+' (кухня)', 'ok');
+    }
+
+    // Кнопки окремих кольорів
+    function toggleRGB(color) {
+      if (!ready) return;
+      rgb[color] = !rgb[color];
+      updateRGBui();
+      updateBulb();
+      pub(BASE+'/kitchen/'+color, rgb[color] ? 'ON' : 'OFF');
+      log((rgb[color]?'Увімкнено':'Вимкнено')+' RGB-'+color.toUpperCase()+' (кухня)', 'ok');
+    }
+
+    function toggleRoom(room) {
+      if (!ready) return;
+      let anyOn;
+      if (room === 'kitchen') {
+        anyOn = sw['kitchen-0'] || rgb.r || rgb.g || rgb.b;
+        const newVal = !anyOn;
+        sw['kitchen-0'] = newVal;
+        rgb.r = rgb.g = rgb.b = newVal;
+        updateDevUI('kitchen','0');
+        updateRGBui();
+        pub(BASE+'/kitchen/all', newVal ? 'ON' : 'OFF');
+      } else {
+        anyOn = sw[room+'-0'] || sw[room+'-1'];
+        const newVal = !anyOn;
+        sw[room+'-0'] = sw[room+'-1'] = newVal;
+        updateDevUI(room,'0');
+        updateDevUI(room,'1');
+        pub(BASE+'/'+room+'/all', newVal ? 'ON' : 'OFF');
+      }
+      updateBulb();
+      log((!anyOn?'Кімната увімкнена':'Кімната вимкнена')+' ('+room+')', 'ok');
     }
 
     function allOff() {
       if (!ready) return;
-      for (let r=0; r<4; r++) {
-        state[r] = [false, false];
-        for (let d=0; d<2; d++) updateDevUI(r, d);
-      }
+      Object.keys(sw).forEach(k => { sw[k] = false; });
+      rgb.r = rgb.g = rgb.b = false;
+      ['living','kitchen','garage','wardrobe'].forEach(rm => {
+        updateDevUI(rm,'0');
+        updateDevUI(rm,'1');
+      });
+      updateRGBui();
       updateBulb();
-      publish(TOPIC_ALL, 'OFF');
+      pub(TOPIC_ALL, 'OFF');
       log('Все вимкнено 🏠', 'ok');
     }
 
@@ -448,23 +381,31 @@
       document.querySelectorAll('.tab').forEach((el,i)  => el.classList.toggle('active', i===idx));
     }
 
-    function setConn(s, txt) {
-      document.getElementById('conn').className = 'conn '+s;
-      document.getElementById('conn-text').textContent = txt;
-    }
-
-    // Парсимо статус від ESP32
     function applyStatus(json) {
       try {
         const data = JSON.parse(json);
-        ROOMS.forEach((rm, r) => {
-          for (let d=0; d<2; d++) {
-            const key = rm+'_'+d;
-            if (key in data) { state[r][d] = data[key]; updateDevUI(r,d); }
-          }
+        sw['living-0']   = !!data.living_0;
+        sw['living-1']   = !!data.living_1;
+        sw['kitchen-0']  = !!data.kitchen_0;
+        rgb.r            = !!data.kitchen_r;
+        rgb.g            = !!data.kitchen_g;
+        rgb.b            = !!data.kitchen_b;
+        sw['garage-0']   = !!data.garage_0;
+        sw['garage-1']   = !!data.garage_1;
+        sw['wardrobe-0'] = !!data.wardrobe_0;
+        sw['wardrobe-1'] = !!data.wardrobe_1;
+        ['living','kitchen','garage','wardrobe'].forEach(rm => {
+          updateDevUI(rm,'0');
+          updateDevUI(rm,'1');
         });
+        updateRGBui();
         updateBulb();
       } catch(e) {}
+    }
+
+    function setConn(s, txt) {
+      document.getElementById('conn').className = 'conn '+s;
+      document.getElementById('conn-text').textContent = txt;
     }
 
     function connect() {
@@ -484,8 +425,7 @@
         if (topic === TOPIC_STATUS) applyStatus(payload.toString());
       });
       client.on('error', err => { setConn('error','помилка'); log('Помилка: '+err.message,'err'); });
-      client.on('reconnect', () => { setConn('connecting','перепідключення...'); log('Перепідключення...'); });
-      client.on('disconnect', () => { ready = false; });
+      client.on('reconnect', () => { setConn('connecting','перепідключення...'); ready = false; });
     }
 
     connect();
