@@ -1,141 +1,135 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Smart Home — Юлія</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Home — Керування світлом</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
   <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c26;
-      --border:#2a2a38;--accent:#f5c400;--accent-dim:rgba(245,196,0,0.12);
-      --text:#e8e8f0;--muted:#6b6b80;--green:#1dbd8a;--red:#e24b4a;
-      --mono:'Space Mono',monospace;--display:'Syne',sans-serif;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f; --surface: #13131a; --surface2: #1c1c26;
+      --border: #2a2a38; --accent: #f5c400; --accent-dim: rgba(245,196,0,0.12);
+      --text: #e8e8f0; --muted: #6b6b80; --green: #1dbd8a; --red: #e24b4a;
+      --mono: 'Space Mono', monospace; --display: 'Syne', sans-serif;
     }
-    body{background:var(--bg);color:var(--text);font-family:var(--display);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem 3rem}
-    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(245,196,0,.06),transparent 70%);pointer-events:none}
-    .wrap{width:100%;max-width:380px}
+    body { background: var(--bg); color: var(--text); font-family: var(--display); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem 3rem; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(245,196,0,0.06) 0%, transparent 70%); pointer-events: none; }
+    .wrap { width: 100%; max-width: 380px; }
 
-    header{text-align:center;margin-bottom:2rem}
-    .label{font-family:var(--mono);font-size:11px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:.5rem}
-    h1{font-size:28px;font-weight:800;letter-spacing:-.02em}
-    h1 span{color:var(--accent)}
-    .conn{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;padding:4px 12px;border-radius:999px;border:1px solid var(--border);color:var(--muted);margin-top:.75rem;transition:all .3s}
-    .conn.connected{border-color:var(--green);color:var(--green)}
-    .conn.error{border-color:var(--red);color:var(--red)}
-    .conn-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
-    .conn.connecting .conn-dot{animation:blink 1s infinite}
-    @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+    header { text-align: center; margin-bottom: 2rem; }
+    header .label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; margin-bottom: 0.5rem; }
+    header h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+    header h1 span { color: var(--accent); }
+    .conn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); margin-top: 0.75rem; transition: all 0.3s; }
+    .conn.connected { border-color: var(--green); color: var(--green); }
+    .conn.error { border-color: var(--red); color: var(--red); }
+    .conn-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .conn.connecting .conn-dot { animation: blink 1s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
-    /* BULB */
-    .bulb-wrap{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:2rem 1.5rem 1.5rem;text-align:center;margin-bottom:1.5rem;transition:border-color .4s;position:relative;overflow:hidden;width:100%;cursor:pointer}
-    .bulb-wrap.on{border-color:rgba(245,196,0,.4)}
-    .bulb-wrap::before{content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:200px;height:200px;border-radius:50%;background:var(--accent);opacity:0;filter:blur(60px);transition:opacity .5s;pointer-events:none}
-    .bulb-wrap.on::before{opacity:.18}
-    .bulb-svg{width:80px;height:80px;margin:0 auto 1rem;display:block}
-    .bulb-body{transition:fill .4s;fill:#2a2a38}
-    .bulb-glow{transition:opacity .4s;opacity:0}
-    .on .bulb-body{fill:var(--accent)}
-    .on .bulb-glow{opacity:1}
-    .state-label{font-size:20px;font-weight:700;margin-bottom:.25rem}
-    .state-sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:1.25rem}
-    .global-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .btn-global{padding:11px 0;font-family:var(--display);font-size:13px;font-weight:700;border-radius:12px;border:1px solid var(--border);cursor:pointer;transition:all .15s;background:var(--bg);color:var(--muted);display:flex;align-items:center;justify-content:center;gap:7px}
-    .btn-global:disabled{opacity:.35;cursor:not-allowed}
-    .btn-global.all-on:not(:disabled){border-color:rgba(245,196,0,.35);color:var(--accent)}
-    .btn-global.all-on:not(:disabled):hover{background:var(--accent-dim)}
-    .btn-global.all-off:not(:disabled){border-color:rgba(226,75,74,.3);color:var(--red)}
-    .btn-global.all-off:not(:disabled):hover{background:rgba(226,75,74,.08)}
-    .btn-global:not(:disabled):active{transform:scale(.96)}
+    .bulb-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 2rem 1.5rem 1.5rem; text-align: center; margin-bottom: 1.5rem; transition: border-color 0.4s; position: relative; overflow: hidden; width: 100%; }
+    .bulb-wrap.on { border-color: rgba(245,196,0,0.4); }
+    .bulb-wrap::before { content: ''; position: absolute; top: -40px; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; border-radius: 50%; background: var(--accent); opacity: 0; filter: blur(60px); transition: opacity 0.5s; pointer-events: none; }
+    .bulb-wrap.on::before { opacity: 0.18; }
+    .bulb-svg { width: 80px; height: 80px; margin: 0 auto 1rem; display: block; }
+    .bulb-body { transition: fill 0.4s; fill: #2a2a38; }
+    .bulb-glow { transition: opacity 0.4s; opacity: 0; }
+    .on .bulb-body { fill: var(--accent); }
+    .on .bulb-glow { opacity: 1; }
+    .state-label { font-size: 20px; font-weight: 700; margin-bottom: 0.25rem; }
+    .state-sub { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 1.25rem; }
+    .global-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn-global { padding: 11px 0; font-family: var(--display); font-size: 13px; font-weight: 700; border-radius: 12px; border: 1px solid var(--border); cursor: pointer; transition: all .15s; background: var(--bg); color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 7px; }
+    .btn-global:disabled { opacity: .35; cursor: not-allowed; }
+    .btn-global.all-on:not(:disabled) { border-color: rgba(245,196,0,.35); color: var(--accent); }
+    .btn-global.all-on:not(:disabled):hover { background: var(--accent-dim); }
+    .btn-global.all-off:not(:disabled) { border-color: rgba(226,75,74,.3); color: var(--red); }
+    .btn-global.all-off:not(:disabled):hover { background: rgba(226,75,74,.08); }
+    .btn-global:not(:disabled):active { transform: scale(.96); }
 
-    /* TABS */
-    .tabs{display:flex;gap:6px;margin-bottom:1.25rem;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
-    .tabs::-webkit-scrollbar{display:none}
-    .tab{flex:1;min-width:70px;padding:9px 4px;font-family:var(--display);font-size:12px;font-weight:700;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--muted);cursor:pointer;transition:all .15s;text-align:center;white-space:nowrap}
-    .tab.active{background:var(--accent-dim);border-color:rgba(245,196,0,.4);color:var(--accent)}
-    .tab:hover:not(.active){color:var(--text);border-color:#444}
+    .tabs { display: flex; gap: 6px; margin-bottom: 1.25rem; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { flex: 1; min-width: 70px; padding: 9px 4px; font-family: var(--display); font-size: 12px; font-weight: 700; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; transition: all 0.15s; text-align: center; white-space: nowrap; }
+    .tab.active { background: var(--accent-dim); border-color: rgba(245,196,0,.4); color: var(--accent); }
+    .tab:hover:not(.active) { color: var(--text); border-color: #444; }
 
-    /* ROOM */
-    .room{display:none}
-    .room.active{display:block}
-    .room-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
-    .room-title{font-size:18px;font-weight:800}
-    .room-btns{display:flex;gap:8px}
-    .room-btn{padding:8px 14px;font-family:var(--display);font-size:12px;font-weight:700;border-radius:10px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .15s}
-    .room-btn.r-on{border-color:rgba(245,196,0,.35);color:var(--accent)}
-    .room-btn.r-off{border-color:rgba(226,75,74,.3);color:var(--red)}
-    .room-btn:active{transform:scale(.96)}
+    .room { display: none; }
+    .room.active { display: block; }
+    .room-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .room-title { font-size: 18px; font-weight: 800; }
+    .room-btn { padding: 8px 14px; font-family: var(--display); font-size: 12px; font-weight: 700; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .room-btn:active { transform: scale(0.96); }
 
-    /* DEVICE */
-    .device{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.1rem 1.25rem;margin-bottom:.75rem;transition:border-color .3s}
-    .device.on{border-color:rgba(245,196,0,.3)}
-    .dev-header{display:flex;align-items:center;justify-content:space-between;gap:1rem}
-    .dev-info{display:flex;align-items:center;gap:10px}
-    .dev-dot{width:10px;height:10px;border-radius:50%;background:var(--border);transition:background .3s,box-shadow .3s;flex-shrink:0}
-    .device.on .dev-dot{background:var(--accent);box-shadow:0 0 6px rgba(245,196,0,.5)}
-    .dev-name{font-size:14px;font-weight:700}
-    .dev-type{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
-    .toggle{position:relative;width:44px;height:24px;cursor:pointer;flex-shrink:0}
-    .toggle input{opacity:0;width:0;height:0}
-    .toggle-slider{position:absolute;inset:0;background:#2a2a38;border-radius:999px;transition:.3s}
-    .toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#6b6b80;border-radius:50%;transition:.3s}
-    .toggle input:checked+.toggle-slider{background:rgba(245,196,0,.2);border:1px solid rgba(245,196,0,.5)}
-    .toggle input:checked+.toggle-slider::before{transform:translateX(20px);background:var(--accent)}
+    .device { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem 1.25rem; margin-bottom: 0.75rem; transition: border-color 0.3s; }
+    .device.on { border-color: rgba(245,196,0,.3); }
+    .dev-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .dev-info { display: flex; align-items: center; gap: 10px; }
+    .dev-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); transition: background 0.3s, box-shadow 0.3s; flex-shrink: 0; }
+    .device.on .dev-dot { background: var(--accent); box-shadow: 0 0 6px rgba(245,196,0,.5); }
+    .dev-name { font-size: 14px; font-weight: 700; }
+    .dev-type { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
 
-    /* RGB */
-    .rgb-row{display:flex;gap:8px;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
-    .rgb-btn{flex:1;padding:10px 4px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);font-family:var(--display);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;opacity:.3;pointer-events:none}
-    .rgb-row.enabled .rgb-btn{opacity:.55;pointer-events:auto}
-    .rgb-btn:active{transform:scale(.95)}
-    .btn-r{color:#e24b4a}
-    .btn-r.active-color{border-color:#e24b4a;background:rgba(226,75,74,.15);box-shadow:0 0 8px rgba(226,75,74,.3);opacity:1!important}
-    .btn-g{color:#1dbd8a}
-    .btn-g.active-color{border-color:#1dbd8a;background:rgba(29,189,138,.15);box-shadow:0 0 8px rgba(29,189,138,.3);opacity:1!important}
-    .btn-b{color:#4a9eff}
-    .btn-b.active-color{border-color:#4a9eff;background:rgba(74,158,255,.15);box-shadow:0 0 8px rgba(74,158,255,.3);opacity:1!important}
+    .toggle { position: relative; width: 44px; height: 24px; cursor: pointer; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; inset: 0; background: #2a2a38; border-radius: 999px; transition: .3s; }
+    .toggle-slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: #6b6b80; border-radius: 50%; transition: .3s; }
+    .toggle input:checked + .toggle-slider { background: rgba(245,196,0,.2); border: 1px solid rgba(245,196,0,.5); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: var(--accent); }
 
-    /* CAMERA CARD */
-    .camera-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.1rem 1.25rem;margin-bottom:.75rem}
-    .camera-card.detecting{border-color:var(--green)}
-    .camera-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem}
-    .camera-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
-    .cam-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .3s;flex-shrink:0}
-    .camera-card.active .cam-dot{background:var(--green);box-shadow:0 0 6px rgba(29,189,138,.6);animation:pulse2 1.5s infinite}
-    .camera-card.detecting .cam-dot{background:var(--accent);box-shadow:0 0 8px rgba(245,196,0,.8)}
-    @keyframes pulse2{0%,100%{opacity:1}50%{opacity:.5}}
-    .cam-status-txt{font-family:var(--mono);font-size:10px;color:var(--muted)}
-    .cam-status-txt.person{color:var(--accent)}
+    /* ── RGB HUE SLIDER ─────────────────────────────────── */
+    .hue-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); opacity: 0.3; pointer-events: none; transition: opacity 0.3s; }
+    .hue-section.enabled { opacity: 1; pointer-events: auto; }
+    .hue-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+    .hue-label { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+    .hue-color-preview { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); transition: background 0.2s; flex-shrink: 0; }
+    .hue-track-wrap { position: relative; height: 28px; display: flex; align-items: center; }
+    .hue-track { width: 100%; height: 10px; border-radius: 999px; background: linear-gradient(to right,
+      hsl(0,100%,50%), hsl(30,100%,50%), hsl(60,100%,50%), hsl(90,100%,50%),
+      hsl(120,100%,50%), hsl(150,100%,50%), hsl(180,100%,50%), hsl(210,100%,50%),
+      hsl(240,100%,50%), hsl(270,100%,50%), hsl(300,100%,50%), hsl(330,100%,50%), hsl(360,100%,50%)
+    ); cursor: pointer; position: relative; }
+    .hue-thumb { position: absolute; width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 2px solid rgba(255,255,255,0.9); box-shadow: 0 1px 6px rgba(0,0,0,0.5); top: 50%; transform: translateY(-50%); pointer-events: none; transition: left 0.05s; }
+    input[type=range].hue-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; margin: 0; }
 
-    .cam-video-wrap{position:relative;border-radius:10px;overflow:hidden;background:#0d0d13;margin-bottom:.75rem;aspect-ratio:4/3;display:none}
-    .cam-video-wrap.visible{display:block}
-    .cam-video-wrap video{width:100%;height:100%;object-fit:cover;display:block;transform:scaleX(-1)}
-    .cam-video-wrap canvas{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(-1)}
-    .cam-person-overlay{position:absolute;inset:0;border:3px solid var(--green);border-radius:10px;opacity:0;transition:opacity .3s;pointer-events:none}
-    .camera-card.detecting .cam-person-overlay{opacity:1}
-    .cam-person-label{position:absolute;top:8px;left:8px;background:var(--green);color:#000;font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;opacity:0;transition:opacity .3s}
-    .camera-card.detecting .cam-person-label{opacity:1}
+    /* ── КАМЕРА БЛОК ──────────────────────────────────────── */
+    .camera-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem 1.25rem; margin-bottom: 0.75rem; }
+    .camera-card.detecting { border-color: var(--green); }
+    .camera-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.9rem; }
+    .camera-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .cam-status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background .3s; flex-shrink: 0; }
+    .camera-card.active .cam-status-dot { background: var(--green); box-shadow: 0 0 6px rgba(29,189,138,.6); animation: pulse 1.5s infinite; }
+    .camera-card.detecting .cam-status-dot { background: var(--accent); box-shadow: 0 0 8px rgba(245,196,0,.8); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
 
-    .cam-info{font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:.75rem;line-height:1.5}
-    .cam-info span{color:var(--text)}
+    .cam-video-wrap { position: relative; border-radius: 10px; overflow: hidden; background: #0d0d13; margin-bottom: 0.75rem; aspect-ratio: 4/3; display: none; }
+    .cam-video-wrap.visible { display: block; }
+    .cam-video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1); }
+    .cam-video-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; transform: scaleX(-1); }
+    .cam-person-overlay { position: absolute; inset: 0; border: 3px solid var(--green); border-radius: 10px; opacity: 0; transition: opacity .3s; pointer-events: none; }
+    .camera-card.detecting .cam-person-overlay { opacity: 1; }
+    .cam-person-label { position: absolute; top: 8px; left: 8px; background: var(--green); color: #000; font-family: var(--mono); font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; opacity: 0; transition: opacity .3s; }
+    .camera-card.detecting .cam-person-label { opacity: 1; }
 
-    /* Таймер відліку */
-    .garage-timer{background:rgba(226,75,74,.08);border:1px solid rgba(226,75,74,.25);border-radius:10px;padding:.6rem .9rem;margin-bottom:.75rem;font-family:var(--mono);font-size:11px;color:var(--red);display:none;text-align:center}
-    .garage-timer.visible{display:block}
+    .cam-info { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 0.75rem; line-height: 1.5; }
+    .cam-info span { color: var(--text); }
+    .pir-row { display: flex; align-items: center; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+    .pir-label { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .pir-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .pir-active { color: var(--green); font-size: 10px; font-family: var(--mono); }
+    .btn-camera { width: 100%; padding: 11px; font-family: var(--display); font-size: 13px; font-weight: 700; border-radius: 12px; border: 1px solid rgba(29,189,138,.3); background: rgba(29,189,138,.08); color: var(--green); cursor: pointer; transition: all .15s; margin-bottom: 0.75rem; }
+    .btn-camera:hover { background: rgba(29,189,138,.15); }
+    .btn-camera:active { transform: scale(.97); }
+    .btn-camera.stop { border-color: rgba(226,75,74,.3); background: rgba(226,75,74,.08); color: var(--red); }
+    .btn-camera.stop:hover { background: rgba(226,75,74,.15); }
 
-    .btn-camera{width:100%;padding:11px;font-family:var(--display);font-size:13px;font-weight:700;border-radius:12px;border:1px solid rgba(29,189,138,.3);background:rgba(29,189,138,.08);color:var(--green);cursor:pointer;transition:all .15s;margin-bottom:0}
-    .btn-camera:hover{background:rgba(29,189,138,.15)}
-    .btn-camera:active{transform:scale(.97)}
-    .btn-camera.stop{border-color:rgba(226,75,74,.3);background:rgba(226,75,74,.08);color:var(--red)}
-    .btn-camera.stop:hover{background:rgba(226,75,74,.15)}
+    .log { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1rem; font-family: var(--mono); font-size: 11px; color: var(--muted); min-height: 80px; max-height: 120px; overflow-y: auto; margin-top: 1.5rem; }
+    .log-line { padding: 2px 0; }
+    .log-line.ok { color: var(--green); }
+    .log-line.err { color: var(--red); }
+    .log-line.warn { color: var(--accent); }
 
-    /* LOG */
-    .log{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;font-family:var(--mono);font-size:11px;color:var(--muted);min-height:80px;max-height:120px;overflow-y:auto;margin-top:1.5rem}
-    .log-line{padding:2px 0}
-    .log-line.ok{color:var(--green)}
-    .log-line.err{color:var(--red)}
-    .log-line.warn{color:var(--accent)}
-    footer{margin-top:1.5rem;font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center}
+    footer { margin-top: 1.5rem; font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: center; }
   </style>
 </head>
 <body>
@@ -149,7 +143,6 @@
     </div>
   </header>
 
-  <!-- ВЕЛИКА КНОПКА ВСЬОГО ДОМУ -->
   <div class="bulb-wrap" id="bulb-wrap">
     <svg class="bulb-svg" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle cx="45" cy="38" r="26" class="bulb-body"/>
@@ -171,7 +164,6 @@
     </div>
   </div>
 
-  <!-- ТАБИ -->
   <div class="tabs">
     <div class="tab active" onclick="showRoom(0)">🛋 Зал</div>
     <div class="tab" onclick="showRoom(1)">🍳 Кухня</div>
@@ -181,13 +173,7 @@
 
   <!-- ЗАЛ -->
   <div class="room active" id="room-0">
-    <div class="room-header">
-      <div class="room-title">🛋 Зал</div>
-      <div class="room-btns">
-        <button class="room-btn r-on" onclick="roomOn('living')">Увімк</button>
-        <button class="room-btn r-off" onclick="roomOff('living')">Вимк</button>
-      </div>
-    </div>
+    <div class="room-header"><div class="room-title">Зал</div><button class="room-btn" onclick="toggleRoom('living')">Вмк / Вимк</button></div>
     <div class="device" id="d-living-0">
       <div class="dev-header">
         <div class="dev-info"><div class="dev-dot"></div><div><div class="dev-name">Люстра</div><div class="dev-type">біла</div></div></div>
@@ -204,57 +190,52 @@
 
   <!-- КУХНЯ -->
   <div class="room" id="room-1">
-    <div class="room-header">
-      <div class="room-title">🍳 Кухня</div>
-      <div class="room-btns">
-        <button class="room-btn r-on" onclick="roomOn('kitchen')">Увімк</button>
-        <button class="room-btn r-off" onclick="roomOff('kitchen')">Вимк</button>
-      </div>
-    </div>
+    <div class="room-header"><div class="room-title">Кухня</div><button class="room-btn" onclick="toggleRoom('kitchen')">Вмк / Вимк</button></div>
     <div class="device" id="d-kitchen-0">
       <div class="dev-header">
         <div class="dev-info"><div class="dev-dot"></div><div><div class="dev-name">Лампа</div><div class="dev-type">біла</div></div></div>
         <label class="toggle"><input type="checkbox" id="sw-kitchen-0" onchange="toggleDev('kitchen','0',this.checked)"><span class="toggle-slider"></span></label>
       </div>
     </div>
+
+    <!-- NeoPixel підсвітка з HUE повзунцем -->
     <div class="device" id="d-kitchen-rgb">
       <div class="dev-header">
-        <div class="dev-info"><div class="dev-dot" id="dot-kitchen-rgb"></div><div><div class="dev-name">Підсвітка</div><div class="dev-type">RGB · 1 колір</div></div></div>
+        <div class="dev-info">
+          <div class="dev-dot" id="dot-kitchen-rgb"></div>
+          <div>
+            <div class="dev-name">Підсвітка</div>
+            <div class="dev-type">RGB · NeoPixel</div>
+          </div>
+        </div>
         <label class="toggle"><input type="checkbox" id="sw-kitchen-rgb" onchange="toggleKitchenRGB(this.checked)"><span class="toggle-slider"></span></label>
       </div>
-      <div class="rgb-row" id="rgb-row">
-        <button class="rgb-btn btn-r" id="btn-r" onclick="setRGBColor('r')">● Червоний</button>
-        <button class="rgb-btn btn-g" id="btn-g" onclick="setRGBColor('g')">● Зелений</button>
-        <button class="rgb-btn btn-b" id="btn-b" onclick="setRGBColor('b')">● Синій</button>
+
+      <!-- Повзунець кольору -->
+      <div class="hue-section" id="hue-section">
+        <div class="hue-label-row">
+          <span class="hue-label">Колір підсвітки</span>
+          <div class="hue-color-preview" id="hue-preview"></div>
+        </div>
+        <div class="hue-track-wrap">
+          <div class="hue-track" id="hue-track">
+            <div class="hue-thumb" id="hue-thumb"></div>
+          </div>
+          <input type="range" class="hue-input" id="hue-input" min="0" max="360" value="0" oninput="onHueInput(this.value)">
+        </div>
       </div>
     </div>
   </div>
 
   <!-- ГАРАЖ -->
   <div class="room" id="room-2">
-    <div class="room-header">
-      <div class="room-title">🚗 Гараж</div>
-      <div class="room-btns">
-        <button class="room-btn r-on" onclick="roomOn('garage')">Увімк</button>
-        <button class="room-btn r-off" onclick="roomOff('garage')">Вимк</button>
-      </div>
-    </div>
-
+    <div class="room-header"><div class="room-title">🚗 Гараж</div><button class="room-btn" onclick="toggleRoom('garage')">Вмк / Вимк</button></div>
     <div class="device" id="d-garage-0">
       <div class="dev-header">
-        <div class="dev-info"><div class="dev-dot"></div>
-          <div>
-            <div class="dev-name">Лампа</div>
-            <div class="dev-type">авто · камера (30с таймаут)</div>
-          </div>
-        </div>
+        <div class="dev-info"><div class="dev-dot"></div><div><div class="dev-name">Лампа</div><div class="dev-type">авто · PIR + камера</div></div></div>
         <label class="toggle"><input type="checkbox" id="sw-garage-0" onchange="toggleDev('garage','0',this.checked)"><span class="toggle-slider"></span></label>
       </div>
     </div>
-
-    <!-- Таймер відліку -->
-    <div class="garage-timer" id="garage-timer">⏱ Лампа вимкнеться через <span id="timer-sec">30</span>с (немає людини)</div>
-
     <div class="device" id="d-garage-1">
       <div class="dev-header">
         <div class="dev-info"><div class="dev-dot"></div><div><div class="dev-name">Підсвітка</div><div class="dev-type">синя</div></div></div>
@@ -262,42 +243,39 @@
       </div>
     </div>
 
-    <!-- КАМЕРА -->
+    <!-- КАМЕРА + PIR -->
     <div class="camera-card" id="camera-card">
       <div class="camera-header">
         <div class="camera-title">
-          <span class="cam-dot" id="cam-dot"></span>
-          📷 Камера
+          <span class="cam-status-dot" id="cam-dot"></span>
+          📷 Камера + PIR
         </div>
-        <span class="cam-status-txt" id="cam-status-txt">вимкнена</span>
+        <div class="pir-active" id="pir-badge">PIR: очікування</div>
       </div>
-
       <div class="cam-video-wrap" id="cam-wrap">
         <video id="cam-video" autoplay muted playsinline></video>
         <canvas id="cam-canvas"></canvas>
         <div class="cam-person-overlay"></div>
         <div class="cam-person-label" id="cam-label">👤 Людина</div>
       </div>
-
       <div class="cam-info" id="cam-info">
         Камера вимкнена.<br>
-        Увімкни щоб <span>автоматично керувати лампою</span> при виявленні людини.<br>
-        Якщо людини немає — лампа вимкнеться через 30 секунд.
+        Увімкни щоб <span>автоматично керувати лампою</span> при виявленні людини.
       </div>
-
       <button class="btn-camera" id="btn-cam" onclick="toggleCamera()">📷 Увімкнути камеру</button>
+      <div class="pir-row">
+        <div>
+          <div class="pir-label">🔍 PIR датчик</div>
+          <div class="pir-sub">Датчик руху в гаражі</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="sw-pir" checked onchange="togglePIR(this.checked)"><span class="toggle-slider"></span></label>
+      </div>
     </div>
   </div>
 
   <!-- ГАРДЕРОБ -->
   <div class="room" id="room-3">
-    <div class="room-header">
-      <div class="room-title">👗 Гардероб</div>
-      <div class="room-btns">
-        <button class="room-btn r-on" onclick="roomOn('wardrobe')">Увімк</button>
-        <button class="room-btn r-off" onclick="roomOff('wardrobe')">Вимк</button>
-      </div>
-    </div>
+    <div class="room-header"><div class="room-title">Гардероб</div><button class="room-btn" onclick="toggleRoom('wardrobe')">Вмк / Вимк</button></div>
     <div class="device" id="d-wardrobe-0">
       <div class="dev-header">
         <div class="dev-info"><div class="dev-dot"></div><div><div class="dev-name">Лампа</div><div class="dev-type">біла</div></div></div>
@@ -320,360 +298,355 @@
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 <script>
-const BASE         = 'smarthome/yulia';
-const TOPIC_ALL    = BASE+'/all';
-const TOPIC_STATUS = BASE+'/status';
-const TOPIC_CAM    = BASE+'/garage/camera';
+  const BASE         = 'smarthome/yulia';
+  const TOPIC_ALL    = BASE + '/all';
+  const TOPIC_STATUS = BASE + '/status';
+  const TOPIC_CAM    = BASE + '/garage/camera';
+  const CLIENT_ID    = 'WebPanel_' + Math.random().toString(16).slice(2, 8);
 
-// ── Стан ─────────────────────────────────────────────────
-const sw = {
-  'living-0':false,'living-1':false,
-  'kitchen-0':false,
-  'garage-0':false,'garage-1':false,
-  'wardrobe-0':false,'wardrobe-1':false,
-};
-let kitRGB='r', kitRGBon=false;
-let camPersonOn=false;
-let client, ready=false;
-let ignoreStatusUntil=0;
+  // ── Стан ─────────────────────────────────────────────────
+  const sw = {
+    'living-0':false,'living-1':false,
+    'kitchen-0':false,
+    'garage-0':false,'garage-1':false,
+    'wardrobe-0':false,'wardrobe-1':false,
+  };
+  let kitRGBon = false;
+  let kitHue   = 0;   // 0–360, поточний відтінок
+  let hueThrottle = null;
 
-// Таймер гаражу на сайті (тільки для відображення)
-let garageTimerInterval=null;
-let garageTimerSec=30;
+  let pirActive=false;
+  let camPersonOn=false;
+  let client, ready=false;
+  let ignoreStatusUntil=0;
+  function localAction(){ ignoreStatusUntil=Date.now()+3000; }
 
-function localAction(){ ignoreStatusUntil=Date.now()+3000; }
-
-// ── MQTT ──────────────────────────────────────────────────
-function pub(topic,msg){
-  if(!client||!client.connected){addLog('Не підключено','err');return;}
-  client.publish(topic,msg);
-}
-
-// ── КНОПКИ ВСЬОГО ДОМУ ────────────────────────────────────
-function allOn(){
-  if(!ready)return;
-  localAction();
-  Object.keys(sw).forEach(k=>sw[k]=true);
-  kitRGBon=true;
-  syncAllUI();
-  pub(TOPIC_ALL,'ON');
-  // Запускаємо таймер гаражу якщо камера не бачить
-  if(!camPersonOn) startGarageTimer();
-  addLog('Весь дім увімкнено 🏠','ok');
-}
-
-function allOff(){
-  if(!ready)return;
-  localAction();
-  Object.keys(sw).forEach(k=>sw[k]=false);
-  kitRGBon=false;
-  syncAllUI();
-  pub(TOPIC_ALL,'OFF');
-  stopGarageTimer();
-  addLog('Весь дім вимкнено 🏠','ok');
-}
-
-// ── КІМНАТИ ───────────────────────────────────────────────
-function roomOn(room){
-  if(!ready)return;
-  localAction();
-  if(room==='kitchen'){
-    sw['kitchen-0']=true; kitRGBon=true;
-    syncDevUI('kitchen','0'); syncRGBui();
-    pub(BASE+'/kitchen/all','ON'); sendRGBState();
-  } else {
-    sw[room+'-0']=sw[room+'-1']=true;
-    syncDevUI(room,'0'); syncDevUI(room,'1');
-    pub(BASE+'/'+room+'/all','ON');
-    if(room==='garage'&&!camPersonOn) startGarageTimer();
+  // ── Hue → RGB ─────────────────────────────────────────────
+  function hueToRgb(h) {
+    const s=1, l=0.5;
+    const c=(1-Math.abs(2*l-1))*s;
+    const x=c*(1-Math.abs((h/60)%2-1));
+    const m=l-c/2;
+    let r=0,g=0,b=0;
+    if(h<60){r=c;g=x;}else if(h<120){r=x;g=c;}
+    else if(h<180){g=c;b=x;}else if(h<240){g=x;b=c;}
+    else if(h<300){r=x;b=c;}else{r=c;b=x;}
+    return [Math.round((r+m)*255), Math.round((g+m)*255), Math.round((b+m)*255)];
   }
-  updateBulb();
-}
 
-function roomOff(room){
-  if(!ready)return;
-  localAction();
-  if(room==='kitchen'){
-    sw['kitchen-0']=false; kitRGBon=false;
-    syncDevUI('kitchen','0'); syncRGBui();
-    pub(BASE+'/kitchen/all','OFF'); sendRGBState();
-  } else {
-    sw[room+'-0']=sw[room+'-1']=false;
-    syncDevUI(room,'0'); syncDevUI(room,'1');
-    pub(BASE+'/'+room+'/all','OFF');
-    if(room==='garage') stopGarageTimer();
+  function updateHueUI(hue) {
+    const pct = hue / 360;
+    const track = document.getElementById('hue-track');
+    const thumb = document.getElementById('hue-thumb');
+    const preview = document.getElementById('hue-preview');
+    if(thumb) thumb.style.left = `calc(${pct*100}% - 10px)`;
+    const color = `hsl(${hue},100%,50%)`;
+    if(preview) preview.style.background = color;
+    // dot кольору
+    const dot = document.getElementById('dot-kitchen-rgb');
+    if(dot && kitRGBon) { dot.style.background = color; dot.style.boxShadow = `0 0 6px hsl(${hue},100%,50%)`; }
   }
-  updateBulb();
-}
 
-// ── ДЕВАЙС ────────────────────────────────────────────────
-function toggleDev(room,dev,on){
-  if(!ready){syncDevUI(room,dev);return;}
-  localAction();
-  sw[room+'-'+dev]=on;
-  syncDevUI(room,dev);
-  updateBulb();
-  pub(BASE+'/'+room+'/'+dev,on?'ON':'OFF');
-  // Гараж лампа вручну — без таймауту (garAuto=false на ESP)
-  if(room==='garage'&&dev==='0') stopGarageTimer();
-  addLog((on?'Увімк':'Вимк')+': '+room+' '+dev,'ok');
-}
+  function onHueInput(val) {
+    kitHue = parseInt(val);
+    kitRGBon = true;
+    // увімкнути тоггл якщо не увімкнено
+    const swEl = document.getElementById('sw-kitchen-rgb');
+    if(swEl && !swEl.checked){ swEl.checked=true; syncRGBui(); updateBulb(); }
+    updateHueUI(kitHue);
+    // throttle публікації — не більше 1 раз на 150ms
+    clearTimeout(hueThrottle);
+    hueThrottle = setTimeout(()=> {
+      const [r,g,b] = hueToRgb(kitHue);
+      pub(BASE+'/kitchen/rgb', r+','+g+','+b);
+      localAction();
+    }, 150);
+  }
 
-function toggleKitchenRGB(on){
-  if(!ready){syncRGBui();return;}
-  localAction();
-  kitRGBon=on;
-  syncRGBui(); updateBulb();
-  sendRGBState();
-}
+  // ── Камера + TF ───────────────────────────────────────────
+  let tfModel=null, camStream=null, camRunning=false, detectLoop=null;
+  let personDetectTimeout=null;
 
-function setRGBColor(color){
-  if(!ready)return;
-  localAction();
-  kitRGB=color; kitRGBon=true;
-  syncRGBui(); updateBulb();
-  sendRGBState();
-  const n={r:'Червоний',g:'Зелений',b:'Синій'};
-  addLog('Колір кухні: '+n[color],'ok');
-}
+  async function toggleCamera(){
+    if(camRunning){ stopCamera(); return; }
+    await startCamera();
+  }
 
-function sendRGBState(){
-  ['r','g','b'].forEach(c=>pub(BASE+'/kitchen/'+c,(kitRGBon&&kitRGB===c)?'ON':'OFF'));
-}
-
-// ── ГАРАЖ ТАЙМЕР (на сайті для відображення) ──────────────
-function startGarageTimer(){
-  stopGarageTimer();
-  if(camPersonOn) return; // камера бачить — без таймауту
-  garageTimerSec=30;
-  document.getElementById('timer-sec').textContent=garageTimerSec;
-  document.getElementById('garage-timer').classList.add('visible');
-  garageTimerInterval=setInterval(()=>{
-    garageTimerSec--;
-    document.getElementById('timer-sec').textContent=garageTimerSec;
-    if(garageTimerSec<=0){
-      stopGarageTimer();
-      // ESP сам вимикає — просто оновлюємо UI
-      sw['garage-0']=false;
-      syncDevUI('garage','0');
-      updateBulb();
-      addLog('⏱ Гараж: таймаут — лампа вимкнена','warn');
+  async function startCamera(){
+    const btn=document.getElementById('btn-cam');
+    btn.textContent='⏳ Завантаження моделі...';
+    btn.disabled=true;
+    try{
+      if(!tfModel){
+        addLog('Завантаження COCO-SSD моделі...','warn');
+        tfModel = await cocoSsd.load();
+        addLog('Модель завантажена!','ok');
+      }
+      camStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+      const video=document.getElementById('cam-video');
+      video.srcObject=camStream;
+      await video.play();
+      camRunning=true;
+      document.getElementById('cam-wrap').classList.add('visible');
+      document.getElementById('camera-card').classList.add('active');
+      btn.textContent='⏹ Вимкнути камеру';
+      btn.classList.add('stop');
+      btn.disabled=false;
+      document.getElementById('cam-info').innerHTML='Камера активна. <span>Детекція людини увімкнена.</span>';
+      addLog('Камера увімкнена','ok');
+      detectLoop=setInterval(()=>detectPerson(), 800);
+    } catch(e){
+      addLog('Камера: '+e.message,'err');
+      btn.textContent='📷 Увімкнути камеру';
+      btn.disabled=false;
     }
-  },1000);
-}
+  }
 
-function stopGarageTimer(){
-  clearInterval(garageTimerInterval);
-  document.getElementById('garage-timer').classList.remove('visible');
-}
+  function stopCamera(){
+    if(camStream) camStream.getTracks().forEach(t=>t.stop());
+    clearInterval(detectLoop);
+    camRunning=false; camStream=null;
+    document.getElementById('cam-wrap').classList.remove('visible');
+    document.getElementById('camera-card').classList.remove('active','detecting');
+    document.getElementById('btn-cam').textContent='📷 Увімкнути камеру';
+    document.getElementById('btn-cam').classList.remove('stop');
+    document.getElementById('cam-info').innerHTML='Камера вимкнена.<br>Увімкни щоб <span>автоматично керувати лампою</span>.';
+    if(camPersonOn){ camPersonOn=false; pub(TOPIC_CAM,'OFF'); }
+    addLog('Камера вимкнена','ok');
+  }
 
-// ── КАМЕРА + TF ───────────────────────────────────────────
-let tfModel=null, camStream=null, camRunning=false, detectLoop=null;
-let personDetectTimeout=null;
-
-async function toggleCamera(){
-  if(camRunning){ stopCamera(); return; }
-  await startCamera();
-}
-
-async function startCamera(){
-  const btn=document.getElementById('btn-cam');
-  btn.textContent='⏳ Завантаження...';
-  btn.disabled=true;
-  try{
-    if(!tfModel){
-      addLog('Завантаження моделі COCO-SSD...','warn');
-      tfModel=await cocoSsd.load();
-      addLog('Модель завантажена!','ok');
-    }
-    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+  async function detectPerson(){
+    if(!tfModel||!camRunning) return;
     const video=document.getElementById('cam-video');
-    video.srcObject=camStream;
-    await video.play();
-    camRunning=true;
-    document.getElementById('cam-wrap').classList.add('visible');
-    document.getElementById('camera-card').classList.add('active');
-    btn.textContent='⏹ Вимкнути камеру';
-    btn.classList.add('stop');
-    btn.disabled=false;
-    document.getElementById('cam-info').innerHTML='Камера активна. <span>Детекція увімкнена.</span><br>Якщо людини немає — лампа вимкнеться через 30с.';
-    document.getElementById('cam-status-txt').textContent='активна';
-    addLog('Камера увімкнена','ok');
-    detectLoop=setInterval(detectPerson,800);
-  }catch(e){
-    addLog('Камера: '+e.message,'err');
-    btn.textContent='📷 Увімкнути камеру';
-    btn.disabled=false;
+    if(video.readyState<2) return;
+    const canvas=document.getElementById('cam-canvas');
+    canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(video,0,0);
+    const predictions = await tfModel.detect(video);
+    const persons = predictions.filter(p=>p.class==='person'&&p.score>0.55);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    persons.forEach(p=>{
+      const [x,y,w,h]=p.bbox;
+      const mx=canvas.width-x-w;
+      ctx.strokeStyle='#1dbd8a'; ctx.lineWidth=2;
+      ctx.strokeRect(mx,y,w,h);
+      ctx.fillStyle='rgba(29,189,138,0.15)'; ctx.fillRect(mx,y,w,h);
+      ctx.fillStyle='#1dbd8a'; ctx.font='bold 12px monospace';
+      ctx.fillText(`👤 ${Math.round(p.score*100)}%`,mx+4,y+16);
+    });
+    const hasPerson=persons.length>0;
+    const card=document.getElementById('camera-card');
+    if(hasPerson&&!camPersonOn){
+      camPersonOn=true; card.classList.add('detecting');
+      document.getElementById('cam-label').textContent='👤 Людина '+Math.round(persons[0].score*100)+'%';
+      pub(TOPIC_CAM,'ON'); localAction();
+      sw['garage-0']=true; syncDevUI('garage','0'); updateBulb();
+      addLog('📷 Камера: людина виявлена → лампа ON','ok');
+    } else if(!hasPerson&&camPersonOn){
+      clearTimeout(personDetectTimeout);
+      personDetectTimeout=setTimeout(()=>{
+        camPersonOn=false; card.classList.remove('detecting');
+        pub(TOPIC_CAM,'OFF');
+        addLog('📷 Камера: людини немає → лампа може вимкнутись','warn');
+      },5000);
+    }
   }
-}
 
-function stopCamera(){
-  if(camStream) camStream.getTracks().forEach(t=>t.stop());
-  clearInterval(detectLoop);
-  clearTimeout(personDetectTimeout);
-  camRunning=false; camStream=null;
-  document.getElementById('cam-wrap').classList.remove('visible');
-  document.getElementById('camera-card').classList.remove('active','detecting');
-  document.getElementById('btn-cam').textContent='📷 Увімкнути камеру';
-  document.getElementById('btn-cam').classList.remove('stop');
-  document.getElementById('cam-info').innerHTML='Камера вимкнена.<br>Увімкни щоб <span>автоматично керувати лампою</span> при виявленні людини.';
-  document.getElementById('cam-status-txt').textContent='вимкнена';
-  document.getElementById('cam-status-txt').className='cam-status-txt';
-  if(camPersonOn){
-    camPersonOn=false;
-    pub(TOPIC_CAM,'OFF');
-    startGarageTimer(); // починаємо відлік бо камера вимкнена
+  // ── PIR ──────────────────────────────────────────────────
+  function togglePIR(enabled){
+    pub(BASE+'/garage/pir_enable', enabled ? 'ON' : 'OFF');
+    addLog('PIR: '+(enabled?'увімкнено':'вимкнено'),'ok');
   }
-  addLog('Камера вимкнена','ok');
-}
 
-async function detectPerson(){
-  if(!tfModel||!camRunning) return;
-  const video=document.getElementById('cam-video');
-  if(video.readyState<2) return;
-  const canvas=document.getElementById('cam-canvas');
-  canvas.width=video.videoWidth; canvas.height=video.videoHeight;
-  const ctx=canvas.getContext('2d');
-  ctx.drawImage(video,0,0);
-  const predictions=await tfModel.detect(video);
-  const persons=predictions.filter(p=>p.class==='person'&&p.score>0.55);
+  function updatePirBadge(motion){
+    pirActive=motion;
+    const badge=document.getElementById('pir-badge');
+    if(badge){ badge.textContent=motion?'PIR: рух!':'PIR: тихо'; badge.style.color=motion?'var(--accent)':'var(--muted)'; }
+    if(motion){ localAction(); sw['garage-0']=true; syncDevUI('garage','0'); updateBulb(); }
+  }
 
-  // Малюємо bounding boxes
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  persons.forEach(p=>{
-    const[x,y,w,h]=p.bbox;
-    const mx=canvas.width-x-w; // дзеркало
-    ctx.strokeStyle='#1dbd8a'; ctx.lineWidth=2;
-    ctx.strokeRect(mx,y,w,h);
-    ctx.fillStyle='rgba(29,189,138,.15)';
-    ctx.fillRect(mx,y,w,h);
-    ctx.fillStyle='#1dbd8a'; ctx.font='bold 12px monospace';
-    ctx.fillText('👤 '+Math.round(p.score*100)+'%',mx+4,y+16);
+  // ── MQTT pub ──────────────────────────────────────────────
+  function pub(topic,msg){
+    if(!client||!client.connected){addLog('Не підключено','err');return;}
+    client.publish(topic,msg);
+  }
+
+  // ── Перемикачі ────────────────────────────────────────────
+  function toggleDev(room,dev,on){
+    if(!ready){syncDevUI(room,dev);return;}
+    localAction(); sw[room+'-'+dev]=on;
+    syncDevUI(room,dev); updateBulb();
+    pub(BASE+'/'+room+'/'+dev,on?'ON':'OFF');
+    addLog((on?'Увімк':'Вимк')+' '+room+'-'+dev,'ok');
+  }
+
+  function toggleKitchenRGB(on){
+    if(!ready){syncRGBui();return;}
+    localAction(); kitRGBon=on;
+    syncRGBui(); updateBulb();
+    if(on){
+      const [r,g,b]=hueToRgb(kitHue);
+      pub(BASE+'/kitchen/rgb', r+','+g+','+b);
+    } else {
+      // вимикаємо — надсилаємо чорний
+      pub(BASE+'/kitchen/rgb','0,0,0');
+    }
+    addLog((on?'Підсвітку увімкнено':'Підсвітку вимкнено'),'ok');
+  }
+
+  function toggleRoom(room){
+    if(!ready)return;
+    localAction();
+    if(room==='kitchen'){
+      const anyOn=sw['kitchen-0']||kitRGBon;
+      const nv=!anyOn;
+      sw['kitchen-0']=nv; kitRGBon=nv;
+      syncDevUI('kitchen','0'); syncRGBui();
+      pub(BASE+'/kitchen/0',nv?'ON':'OFF');
+      if(nv){ const [r,g,b]=hueToRgb(kitHue); pub(BASE+'/kitchen/rgb',r+','+g+','+b); }
+      else   pub(BASE+'/kitchen/rgb','0,0,0');
+    } else {
+      const anyOn=sw[room+'-0']||sw[room+'-1'];
+      const nv=!anyOn;
+      sw[room+'-0']=sw[room+'-1']=nv;
+      syncDevUI(room,'0'); syncDevUI(room,'1');
+      pub(BASE+'/'+room+'/all',nv?'ON':'OFF');
+    }
+    updateBulb();
+  }
+
+  function allOn(){
+    if(!ready)return;
+    localAction();
+    Object.keys(sw).forEach(k=>sw[k]=true);
+    kitRGBon=true; syncAllUI();
+    const [r,g,b]=hueToRgb(kitHue);
+    pub(BASE+'/kitchen/rgb',r+','+g+','+b);
+    pub(TOPIC_ALL,'ON');
+    addLog('Весь дім увімкнено 🏠','ok');
+  }
+
+  function allOff(){
+    if(!ready)return;
+    localAction();
+    Object.keys(sw).forEach(k=>sw[k]=false);
+    kitRGBon=false; syncAllUI();
+    pub(BASE+'/kitchen/rgb','0,0,0');
+    pub(TOPIC_ALL,'OFF');
+    addLog('Весь дім вимкнено 🏠','ok');
+  }
+
+  // ── UI sync ───────────────────────────────────────────────
+  function syncDevUI(room,dev){
+    const on=!!sw[room+'-'+dev];
+    const swEl=document.getElementById('sw-'+room+'-'+dev);
+    const dEl=document.getElementById('d-'+room+'-'+dev);
+    if(swEl)swEl.checked=on;
+    if(dEl)dEl.classList.toggle('on',on);
+  }
+
+  function syncRGBui(){
+    const on=kitRGBon;
+    const swEl=document.getElementById('sw-kitchen-rgb');
+    if(swEl)swEl.checked=on;
+    const card=document.getElementById('d-kitchen-rgb');
+    if(card)card.classList.toggle('on',on);
+    const hueSection=document.getElementById('hue-section');
+    if(hueSection)hueSection.classList.toggle('enabled',on);
+    const dot=document.getElementById('dot-kitchen-rgb');
+    if(dot){
+      if(on){ dot.style.background=`hsl(${kitHue},100%,50%)`; dot.style.boxShadow=`0 0 6px hsl(${kitHue},100%,50%)`; }
+      else   { dot.style.background='var(--border)'; dot.style.boxShadow=''; }
+    }
+  }
+
+  function syncAllUI(){
+    Object.keys(sw).forEach(k=>{const[room,dev]=k.split('-');syncDevUI(room,dev);});
+    syncRGBui(); updateBulb();
+  }
+
+  function updateBulb(){
+    const on=Object.values(sw).some(v=>v)||kitRGBon;
+    document.getElementById('bulb-wrap').classList.toggle('on',on);
+    document.getElementById('state-label').textContent=on?'Увімкнено':'Вимкнено';
+    document.getElementById('state-sub').textContent=on?'горить світло в домі':'все вимкнено';
+  }
+
+  // ── Статус від ESP ────────────────────────────────────────
+  function applyStatus(json){
+    if(Date.now()<ignoreStatusUntil)return;
+    try{
+      const d=JSON.parse(json);
+      sw['living-0']=!!d.living_0; sw['living-1']=!!d.living_1;
+      sw['kitchen-0']=!!d.kitchen_0;
+      sw['garage-0']=!!d.garage_0; sw['garage-1']=!!d.garage_1;
+      sw['wardrobe-0']=!!d.wardrobe_0; sw['wardrobe-1']=!!d.wardrobe_1;
+      // RGB — перевіряємо чи хоч один канал увімкнений
+      const r=!!d.kitchen_r, g=!!d.kitchen_g, b=!!d.kitchen_b;
+      kitRGBon=r||g||b;
+      // Відновлюємо hue з відповіді (приблизно)
+      if(r&&!g&&!b)      kitHue=0;
+      else if(!r&&g&&!b) kitHue=120;
+      else if(!r&&!g&&b) kitHue=240;
+      const inp=document.getElementById('hue-input');
+      if(inp)inp.value=kitHue;
+      updateHueUI(kitHue);
+      syncAllUI();
+    }catch(e){}
+  }
+
+  function applyPirStatus(json){
+    try{ const d=JSON.parse(json); if(d.motion!==undefined) updatePirBadge(!!d.motion); }catch(e){}
+  }
+
+  // ── Tabs ──────────────────────────────────────────────────
+  function showRoom(idx){
+    document.querySelectorAll('.room').forEach((el,i)=>el.classList.toggle('active',i===idx));
+    document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  }
+
+  // ── Log ───────────────────────────────────────────────────
+  function addLog(msg,cls){
+    const el=document.getElementById('log');
+    const d=new Date();
+    const t=[d.getHours(),d.getMinutes(),d.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':');
+    const line=document.createElement('div');
+    line.className='log-line'+(cls?' '+cls:'');
+    line.textContent='['+t+'] '+msg;
+    el.appendChild(line); el.scrollTop=el.scrollHeight;
+  }
+
+  function setConn(s,txt){
+    document.getElementById('conn').className='conn '+s;
+    document.getElementById('conn-text').textContent=txt;
+  }
+
+  // ── MQTT ─────────────────────────────────────────────────
+  client=mqtt.connect('wss://broker.hivemq.com:8884/mqtt',{
+    clientId:CLIENT_ID, clean:true, connectTimeout:8000, reconnectPeriod:3000
   });
 
-  const hasPerson=persons.length>0;
-  const card=document.getElementById('camera-card');
-  const statusTxt=document.getElementById('cam-status-txt');
+  client.on('connect',()=>{
+    setConn('connected','підключено'); addLog('Підключено!','ok');
+    ready=true;
+    document.getElementById('btn-all-on').disabled=false;
+    document.getElementById('btn-all-off').disabled=false;
+    document.getElementById('state-sub').textContent='все вимкнено';
+    client.subscribe(TOPIC_STATUS);
+    client.subscribe(BASE+'/garage/pir');
+    // Ініціалізуємо hue UI
+    updateHueUI(kitHue);
+  });
 
-  if(hasPerson&&!camPersonOn){
-    camPersonOn=true;
-    clearTimeout(personDetectTimeout);
-    card.classList.add('detecting');
-    document.getElementById('cam-label').textContent='👤 '+Math.round(persons[0].score*100)+'%';
-    statusTxt.textContent='людина!'; statusTxt.className='cam-status-txt person';
-    stopGarageTimer(); // скасовуємо таймаут — людина є
-    pub(TOPIC_CAM,'ON');
-    localAction();
-    sw['garage-0']=true; syncDevUI('garage','0'); updateBulb();
-    addLog('📷 Людина виявлена → лампа ON','ok');
-  } else if(!hasPerson&&camPersonOn){
-    clearTimeout(personDetectTimeout);
-    personDetectTimeout=setTimeout(()=>{
-      camPersonOn=false;
-      card.classList.remove('detecting');
-      statusTxt.textContent='активна'; statusTxt.className='cam-status-txt';
-      pub(TOPIC_CAM,'OFF');
-      startGarageTimer(); // починаємо 30с відлік
-      addLog('📷 Людини немає → відлік 30с','warn');
-    },5000); // 5с затримка перед тим як вважати що людини нема
-  }
-}
+  client.on('message',(topic,payload)=>{
+    const msg=payload.toString();
+    if(topic===TOPIC_STATUS) applyStatus(msg);
+    else if(topic===BASE+'/garage/pir') applyPirStatus(msg);
+  });
 
-// ── UI SYNC ───────────────────────────────────────────────
-function syncDevUI(room,dev){
-  const on=!!sw[room+'-'+dev];
-  const swEl=document.getElementById('sw-'+room+'-'+dev);
-  const dEl=document.getElementById('d-'+room+'-'+dev);
-  if(swEl)swEl.checked=on;
-  if(dEl)dEl.classList.toggle('on',on);
-}
-
-function syncRGBui(){
-  const on=kitRGBon;
-  const swEl=document.getElementById('sw-kitchen-rgb');
-  if(swEl)swEl.checked=on;
-  const card=document.getElementById('d-kitchen-rgb');
-  if(card)card.classList.toggle('on',on);
-  const colorMap={r:'#e24b4a',g:'#1dbd8a',b:'#4a9eff'};
-  const dot=document.getElementById('dot-kitchen-rgb');
-  if(dot){dot.style.background=on?colorMap[kitRGB]:'var(--border)';dot.style.boxShadow=on?'0 0 6px '+colorMap[kitRGB]:'';}
-  const row=document.getElementById('rgb-row');
-  if(row)row.classList.toggle('enabled',on);
-  ['r','g','b'].forEach(c=>{const btn=document.getElementById('btn-'+c);if(btn)btn.classList.toggle('active-color',on&&kitRGB===c);});
-}
-
-function syncAllUI(){
-  Object.keys(sw).forEach(k=>{const[room,dev]=k.split('-');syncDevUI(room,dev);});
-  syncRGBui(); updateBulb();
-}
-
-function updateBulb(){
-  const on=Object.values(sw).some(v=>v)||kitRGBon;
-  document.getElementById('bulb-wrap').classList.toggle('on',on);
-  document.getElementById('state-label').textContent=on?'Увімкнено':'Вимкнено';
-  document.getElementById('state-sub').textContent=on?'горить світло в домі':'все вимкнено';
-}
-
-// ── СТАТУС ВІД ESP ────────────────────────────────────────
-function applyStatus(json){
-  if(Date.now()<ignoreStatusUntil) return;
-  try{
-    const d=JSON.parse(json);
-    sw['living-0']=!!d.living_0; sw['living-1']=!!d.living_1;
-    sw['kitchen-0']=!!d.kitchen_0;
-    sw['garage-0']=!!d.garage_0; sw['garage-1']=!!d.garage_1;
-    sw['wardrobe-0']=!!d.wardrobe_0; sw['wardrobe-1']=!!d.wardrobe_1;
-    const r=!!d.kitchen_r,g=!!d.kitchen_g,b=!!d.kitchen_b;
-    kitRGBon=r||g||b;
-    if(r)kitRGB='r'; else if(g)kitRGB='g'; else if(b)kitRGB='b';
-    syncAllUI();
-  }catch(e){}
-}
-
-// ── ТАБИ ─────────────────────────────────────────────────
-function showRoom(idx){
-  document.querySelectorAll('.room').forEach((el,i)=>el.classList.toggle('active',i===idx));
-  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',i===idx));
-}
-
-// ── ЛОГ ──────────────────────────────────────────────────
-function addLog(msg,cls){
-  const el=document.getElementById('log');
-  const d=new Date();
-  const t=[d.getHours(),d.getMinutes(),d.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':');
-  const line=document.createElement('div');
-  line.className='log-line'+(cls?' '+cls:'');
-  line.textContent='['+t+'] '+msg;
-  el.appendChild(line); el.scrollTop=el.scrollHeight;
-}
-
-function setConn(s,txt){
-  document.getElementById('conn').className='conn '+s;
-  document.getElementById('conn-text').textContent=txt;
-}
-
-// ── MQTT CONNECT ──────────────────────────────────────────
-client=mqtt.connect('wss://broker.hivemq.com:8884/mqtt',{
-  clientId:'WebPanel_'+Math.random().toString(16).slice(2,8),
-  clean:true,connectTimeout:8000,reconnectPeriod:3000
-});
-
-client.on('connect',()=>{
-  setConn('connected','підключено');
-  addLog('Підключено!','ok');
-  ready=true;
-  document.getElementById('btn-all-on').disabled=false;
-  document.getElementById('btn-all-off').disabled=false;
-  document.getElementById('state-sub').textContent='все вимкнено';
-  client.subscribe(TOPIC_STATUS);
-});
-
-client.on('message',(topic,payload)=>{
-  if(topic===TOPIC_STATUS) applyStatus(payload.toString());
-});
-
-client.on('error',err=>{setConn('error','помилка');addLog('Помилка: '+err.message,'err');});
-client.on('reconnect',()=>{setConn('connecting','перепідключення...');ready=false;});
+  client.on('error',err=>{setConn('error','помилка');addLog('Помилка: '+err.message,'err');});
+  client.on('reconnect',()=>{setConn('connecting','перепідключення...');ready=false;});
 </script>
 </body>
 </html>
