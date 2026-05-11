@@ -77,7 +77,7 @@
     .toggle input:checked + .toggle-slider { background: rgba(245,196,0,.2); border: 1px solid rgba(245,196,0,.5); }
     .toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: var(--accent); }
 
-    /* ── RGB HUE SLIDER ─────────────────────────────────── */
+    /* ── HUE SLIDER ─────────────────────────────────────── */
     .hue-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); opacity: 0.3; pointer-events: none; transition: opacity 0.3s; }
     .hue-section.enabled { opacity: 1; pointer-events: auto; }
     .hue-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
@@ -92,7 +92,7 @@
     .hue-thumb { position: absolute; width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 2px solid rgba(255,255,255,0.9); box-shadow: 0 1px 6px rgba(0,0,0,0.5); top: 50%; transform: translateY(-50%); pointer-events: none; transition: left 0.05s; }
     input[type=range].hue-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; margin: 0; }
 
-    /* ── КАМЕРА БЛОК ──────────────────────────────────────── */
+    /* ── КАМЕРА ─────────────────────────────────────────── */
     .camera-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem 1.25rem; margin-bottom: 0.75rem; }
     .camera-card.detecting { border-color: var(--green); }
     .camera-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.9rem; }
@@ -101,7 +101,6 @@
     .camera-card.active .cam-status-dot { background: var(--green); box-shadow: 0 0 6px rgba(29,189,138,.6); animation: pulse 1.5s infinite; }
     .camera-card.detecting .cam-status-dot { background: var(--accent); box-shadow: 0 0 8px rgba(245,196,0,.8); }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-
     .cam-video-wrap { position: relative; border-radius: 10px; overflow: hidden; background: #0d0d13; margin-bottom: 0.75rem; aspect-ratio: 4/3; display: none; }
     .cam-video-wrap.visible { display: block; }
     .cam-video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1); }
@@ -110,11 +109,10 @@
     .camera-card.detecting .cam-person-overlay { opacity: 1; }
     .cam-person-label { position: absolute; top: 8px; left: 8px; background: var(--green); color: #000; font-family: var(--mono); font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; opacity: 0; transition: opacity .3s; }
     .camera-card.detecting .cam-person-label { opacity: 1; }
-
     .cam-info { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 0.75rem; line-height: 1.5; }
     .cam-info span { color: var(--text); }
     .pir-row { display: flex; align-items: center; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid var(--border); }
-    .pir-label { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .pir-label { font-size: 13px; font-weight: 700; }
     .pir-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
     .pir-active { color: var(--green); font-size: 10px; font-family: var(--mono); }
     .btn-camera { width: 100%; padding: 11px; font-family: var(--display); font-size: 13px; font-weight: 700; border-radius: 12px; border: 1px solid rgba(29,189,138,.3); background: rgba(29,189,138,.08); color: var(--green); cursor: pointer; transition: all .15s; margin-bottom: 0.75rem; }
@@ -128,7 +126,6 @@
     .log-line.ok { color: var(--green); }
     .log-line.err { color: var(--red); }
     .log-line.warn { color: var(--accent); }
-
     footer { margin-top: 1.5rem; font-family: var(--mono); font-size: 11px; color: var(--muted); text-align: center; }
   </style>
 </head>
@@ -197,21 +194,14 @@
         <label class="toggle"><input type="checkbox" id="sw-kitchen-0" onchange="toggleDev('kitchen','0',this.checked)"><span class="toggle-slider"></span></label>
       </div>
     </div>
-
-    <!-- NeoPixel підсвітка з HUE повзунцем -->
     <div class="device" id="d-kitchen-rgb">
       <div class="dev-header">
         <div class="dev-info">
           <div class="dev-dot" id="dot-kitchen-rgb"></div>
-          <div>
-            <div class="dev-name">Підсвітка</div>
-            <div class="dev-type">RGB · NeoPixel</div>
-          </div>
+          <div><div class="dev-name">Підсвітка</div><div class="dev-type">RGB · NeoPixel</div></div>
         </div>
         <label class="toggle"><input type="checkbox" id="sw-kitchen-rgb" onchange="toggleKitchenRGB(this.checked)"><span class="toggle-slider"></span></label>
       </div>
-
-      <!-- Повзунець кольору -->
       <div class="hue-section" id="hue-section">
         <div class="hue-label-row">
           <span class="hue-label">Колір підсвітки</span>
@@ -242,14 +232,9 @@
         <label class="toggle"><input type="checkbox" id="sw-garage-1" onchange="toggleDev('garage','1',this.checked)"><span class="toggle-slider"></span></label>
       </div>
     </div>
-
-    <!-- КАМЕРА + PIR -->
     <div class="camera-card" id="camera-card">
       <div class="camera-header">
-        <div class="camera-title">
-          <span class="cam-status-dot" id="cam-dot"></span>
-          📷 Камера + PIR
-        </div>
+        <div class="camera-title"><span class="cam-status-dot" id="cam-dot"></span>📷 Камера + PIR</div>
         <div class="pir-active" id="pir-badge">PIR: очікування</div>
       </div>
       <div class="cam-video-wrap" id="cam-wrap">
@@ -259,15 +244,11 @@
         <div class="cam-person-label" id="cam-label">👤 Людина</div>
       </div>
       <div class="cam-info" id="cam-info">
-        Камера вимкнена.<br>
-        Увімкни щоб <span>автоматично керувати лампою</span> при виявленні людини.
+        Камера вимкнена.<br>Увімкни щоб <span>автоматично керувати лампою</span> при виявленні людини.
       </div>
       <button class="btn-camera" id="btn-cam" onclick="toggleCamera()">📷 Увімкнути камеру</button>
       <div class="pir-row">
-        <div>
-          <div class="pir-label">🔍 PIR датчик</div>
-          <div class="pir-sub">Датчик руху в гаражі</div>
-        </div>
+        <div><div class="pir-label">🔍 PIR датчик</div><div class="pir-sub">Датчик руху в гаражі</div></div>
         <label class="toggle"><input type="checkbox" id="sw-pir" checked onchange="togglePIR(this.checked)"><span class="toggle-slider"></span></label>
       </div>
     </div>
@@ -304,7 +285,6 @@
   const TOPIC_CAM    = BASE + '/garage/camera';
   const CLIENT_ID    = 'WebPanel_' + Math.random().toString(16).slice(2, 8);
 
-  // ── Стан ─────────────────────────────────────────────────
   const sw = {
     'living-0':false,'living-1':false,
     'kitchen-0':false,
@@ -312,16 +292,16 @@
     'wardrobe-0':false,'wardrobe-1':false,
   };
   let kitRGBon = false;
-  let kitHue   = 0;   // 0–360, поточний відтінок
+  let kitHue   = 0;
   let hueThrottle = null;
+  let pirActive = false;
+  let camPersonOn = false;
+  let client, ready = false;
+  let ignoreStatusUntil = 0;
 
-  let pirActive=false;
-  let camPersonOn=false;
-  let client, ready=false;
-  let ignoreStatusUntil=0;
-  function localAction(){ ignoreStatusUntil=Date.now()+3000; }
+  function localAction(){ ignoreStatusUntil = Date.now() + 3000; }
 
-  // ── Hue → RGB ─────────────────────────────────────────────
+  // ── Hue ↔ RGB ─────────────────────────────────────────────
   function hueToRgb(h) {
     const s=1, l=0.5;
     const c=(1-Math.abs(2*l-1))*s;
@@ -334,29 +314,44 @@
     return [Math.round((r+m)*255), Math.round((g+m)*255), Math.round((b+m)*255)];
   }
 
+  function rgbToHue(r, g, b) {
+    r/=255; g/=255; b/=255;
+    const max=Math.max(r,g,b), min=Math.min(r,g,b);
+    if(max===min) return 0;
+    const d=max-min;
+    let h=0;
+    if(max===r)      h=(g-b)/d+(g<b?6:0);
+    else if(max===g) h=(b-r)/d+2;
+    else             h=(r-g)/d+4;
+    return Math.round(h*60);
+  }
+
   function updateHueUI(hue) {
     const pct = hue / 360;
-    const track = document.getElementById('hue-track');
     const thumb = document.getElementById('hue-thumb');
     const preview = document.getElementById('hue-preview');
     if(thumb) thumb.style.left = `calc(${pct*100}% - 10px)`;
     const color = `hsl(${hue},100%,50%)`;
     if(preview) preview.style.background = color;
-    // dot кольору
     const dot = document.getElementById('dot-kitchen-rgb');
-    if(dot && kitRGBon) { dot.style.background = color; dot.style.boxShadow = `0 0 6px hsl(${hue},100%,50%)`; }
+    if(dot && kitRGBon) {
+      dot.style.background = color;
+      dot.style.boxShadow  = `0 0 6px ${color}`;
+    }
   }
 
   function onHueInput(val) {
     kitHue = parseInt(val);
-    kitRGBon = true;
-    // увімкнути тоггл якщо не увімкнено
-    const swEl = document.getElementById('sw-kitchen-rgb');
-    if(swEl && !swEl.checked){ swEl.checked=true; syncRGBui(); updateBulb(); }
+    // Якщо тоггл вимкнений — вмикаємо автоматично
+    if(!kitRGBon) {
+      kitRGBon = true;
+      localAction();
+      syncRGBui();
+      updateBulb();
+    }
     updateHueUI(kitHue);
-    // throttle публікації — не більше 1 раз на 150ms
     clearTimeout(hueThrottle);
-    hueThrottle = setTimeout(()=> {
+    hueThrottle = setTimeout(() => {
       const [r,g,b] = hueToRgb(kitHue);
       pub(BASE+'/kitchen/rgb', r+','+g+','+b);
       localAction();
@@ -453,9 +448,8 @@
     }
   }
 
-  // ── PIR ──────────────────────────────────────────────────
   function togglePIR(enabled){
-    pub(BASE+'/garage/pir_enable', enabled ? 'ON' : 'OFF');
+    pub(BASE+'/garage/pir_enable', enabled?'ON':'OFF');
     addLog('PIR: '+(enabled?'увімкнено':'вимкнено'),'ok');
   }
 
@@ -477,7 +471,7 @@
     if(!ready){syncDevUI(room,dev);return;}
     localAction(); sw[room+'-'+dev]=on;
     syncDevUI(room,dev); updateBulb();
-    pub(BASE+'/'+room+'/'+dev,on?'ON':'OFF');
+    pub(BASE+'/'+room+'/'+dev, on?'ON':'OFF');
     addLog((on?'Увімк':'Вимк')+' '+room+'-'+dev,'ok');
   }
 
@@ -489,7 +483,6 @@
       const [r,g,b]=hueToRgb(kitHue);
       pub(BASE+'/kitchen/rgb', r+','+g+','+b);
     } else {
-      // вимикаємо — надсилаємо чорний
       pub(BASE+'/kitchen/rgb','0,0,0');
     }
     addLog((on?'Підсвітку увімкнено':'Підсвітку вимкнено'),'ok');
@@ -503,7 +496,7 @@
       const nv=!anyOn;
       sw['kitchen-0']=nv; kitRGBon=nv;
       syncDevUI('kitchen','0'); syncRGBui();
-      pub(BASE+'/kitchen/0',nv?'ON':'OFF');
+      pub(BASE+'/kitchen/0', nv?'ON':'OFF');
       if(nv){ const [r,g,b]=hueToRgb(kitHue); pub(BASE+'/kitchen/rgb',r+','+g+','+b); }
       else   pub(BASE+'/kitchen/rgb','0,0,0');
     } else {
@@ -511,7 +504,7 @@
       const nv=!anyOn;
       sw[room+'-0']=sw[room+'-1']=nv;
       syncDevUI(room,'0'); syncDevUI(room,'1');
-      pub(BASE+'/'+room+'/all',nv?'ON':'OFF');
+      pub(BASE+'/'+room+'/all', nv?'ON':'OFF');
     }
     updateBulb();
   }
@@ -522,7 +515,7 @@
     Object.keys(sw).forEach(k=>sw[k]=true);
     kitRGBon=true; syncAllUI();
     const [r,g,b]=hueToRgb(kitHue);
-    pub(BASE+'/kitchen/rgb',r+','+g+','+b);
+    pub(BASE+'/kitchen/rgb', r+','+g+','+b);
     pub(TOPIC_ALL,'ON');
     addLog('Весь дім увімкнено 🏠','ok');
   }
@@ -562,7 +555,7 @@
   }
 
   function syncAllUI(){
-    Object.keys(sw).forEach(k=>{const[room,dev]=k.split('-');syncDevUI(room,dev);});
+    Object.keys(sw).forEach(k=>{ const[room,dev]=k.split('-'); syncDevUI(room,dev); });
     syncRGBui(); updateBulb();
   }
 
@@ -574,6 +567,8 @@
   }
 
   // ── Статус від ESP ────────────────────────────────────────
+  // ФІКС: читаємо kitchen_neo окремо від кольору,
+  //       а kitchen_r/g/b тепер числа (не буліани)
   function applyStatus(json){
     if(Date.now()<ignoreStatusUntil)return;
     try{
@@ -582,18 +577,29 @@
       sw['kitchen-0']=!!d.kitchen_0;
       sw['garage-0']=!!d.garage_0; sw['garage-1']=!!d.garage_1;
       sw['wardrobe-0']=!!d.wardrobe_0; sw['wardrobe-1']=!!d.wardrobe_1;
-      // RGB — перевіряємо чи хоч один канал увімкнений
-      const r=!!d.kitchen_r, g=!!d.kitchen_g, b=!!d.kitchen_b;
-      kitRGBon=r||g||b;
-      // Відновлюємо hue з відповіді (приблизно)
-      if(r&&!g&&!b)      kitHue=0;
-      else if(!r&&g&&!b) kitHue=120;
-      else if(!r&&!g&&b) kitHue=240;
-      const inp=document.getElementById('hue-input');
-      if(inp)inp.value=kitHue;
-      updateHueUI(kitHue);
+
+      // Якщо ESP надсилає нове поле kitchen_neo — використовуємо його
+      // Якщо ні (стара прошивка) — fallback на старі поля
+      if(d.kitchen_neo !== undefined){
+        kitRGBon = !!d.kitchen_neo;
+      } else {
+        kitRGBon = !!(d.kitchen_r || d.kitchen_g || d.kitchen_b);
+      }
+
+      // Відновлюємо hue
+      if(d.kitchen_r !== undefined){
+        const rVal = typeof d.kitchen_r === 'boolean' ? (d.kitchen_r?255:0) : Number(d.kitchen_r);
+        const gVal = typeof d.kitchen_g === 'boolean' ? (d.kitchen_g?255:0) : Number(d.kitchen_g);
+        const bVal = typeof d.kitchen_b === 'boolean' ? (d.kitchen_b?255:0) : Number(d.kitchen_b);
+        if(rVal||gVal||bVal){
+          kitHue = rgbToHue(rVal, gVal, bVal);
+          const inp=document.getElementById('hue-input');
+          if(inp) inp.value = kitHue;
+          updateHueUI(kitHue);
+        }
+      }
       syncAllUI();
-    }catch(e){}
+    }catch(e){ console.error('applyStatus:', e); }
   }
 
   function applyPirStatus(json){
@@ -635,7 +641,6 @@
     document.getElementById('state-sub').textContent='все вимкнено';
     client.subscribe(TOPIC_STATUS);
     client.subscribe(BASE+'/garage/pir');
-    // Ініціалізуємо hue UI
     updateHueUI(kitHue);
   });
 
@@ -645,8 +650,8 @@
     else if(topic===BASE+'/garage/pir') applyPirStatus(msg);
   });
 
-  client.on('error',err=>{setConn('error','помилка');addLog('Помилка: '+err.message,'err');});
-  client.on('reconnect',()=>{setConn('connecting','перепідключення...');ready=false;});
+  client.on('error',err=>{ setConn('error','помилка'); addLog('Помилка: '+err.message,'err'); });
+  client.on('reconnect',()=>{ setConn('connecting','перепідключення...'); ready=false; });
 </script>
 </body>
 </html>
