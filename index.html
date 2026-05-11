@@ -111,11 +111,7 @@
     .camera-card.detecting .cam-person-label { opacity: 1; }
     .cam-info { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 0.75rem; line-height: 1.5; }
     .cam-info span { color: var(--text); }
-    .pir-row { display: flex; align-items: center; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid var(--border); }
-    .pir-label { font-size: 13px; font-weight: 700; }
-    .pir-sub { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: 2px; }
-    .pir-active { color: var(--green); font-size: 10px; font-family: var(--mono); }
-    .btn-camera { width: 100%; padding: 11px; font-family: var(--display); font-size: 13px; font-weight: 700; border-radius: 12px; border: 1px solid rgba(29,189,138,.3); background: rgba(29,189,138,.08); color: var(--green); cursor: pointer; transition: all .15s; margin-bottom: 0.75rem; }
+    .btn-camera { width: 100%; padding: 11px; font-family: var(--display); font-size: 13px; font-weight: 700; border-radius: 12px; border: 1px solid rgba(29,189,138,.3); background: rgba(29,189,138,.08); color: var(--green); cursor: pointer; transition: all .15s; }
     .btn-camera:hover { background: rgba(29,189,138,.15); }
     .btn-camera:active { transform: scale(.97); }
     .btn-camera.stop { border-color: rgba(226,75,74,.3); background: rgba(226,75,74,.08); color: var(--red); }
@@ -222,7 +218,7 @@
     <div class="room-header"><div class="room-title">🚗 Гараж</div><button class="room-btn" onclick="toggleRoom('garage')">Вмк / Вимк</button></div>
     <div class="device" id="d-garage-0">
       <div class="dev-header">
-        <div class="dev-info"><div class="dev-dot"></div><div><div class="dev-name">Лампа</div><div class="dev-type">авто · PIR + камера</div></div></div>
+        <div class="dev-info"><div class="dev-dot"></div><div><div class="dev-name">Лампа</div><div class="dev-type">авто · камера</div></div></div>
         <label class="toggle"><input type="checkbox" id="sw-garage-0" onchange="toggleDev('garage','0',this.checked)"><span class="toggle-slider"></span></label>
       </div>
     </div>
@@ -232,10 +228,11 @@
         <label class="toggle"><input type="checkbox" id="sw-garage-1" onchange="toggleDev('garage','1',this.checked)"><span class="toggle-slider"></span></label>
       </div>
     </div>
+
+    <!-- КАМЕРА -->
     <div class="camera-card" id="camera-card">
       <div class="camera-header">
-        <div class="camera-title"><span class="cam-status-dot" id="cam-dot"></span>📷 Камера + PIR</div>
-        <div class="pir-active" id="pir-badge">PIR: очікування</div>
+        <div class="camera-title"><span class="cam-status-dot"></span>📷 Камера</div>
       </div>
       <div class="cam-video-wrap" id="cam-wrap">
         <video id="cam-video" autoplay muted playsinline></video>
@@ -247,10 +244,6 @@
         Камера вимкнена.<br>Увімкни щоб <span>автоматично керувати лампою</span> при виявленні людини.
       </div>
       <button class="btn-camera" id="btn-cam" onclick="toggleCamera()">📷 Увімкнути камеру</button>
-      <div class="pir-row">
-        <div><div class="pir-label">🔍 PIR датчик</div><div class="pir-sub">Датчик руху в гаражі</div></div>
-        <label class="toggle"><input type="checkbox" id="sw-pir" checked onchange="togglePIR(this.checked)"><span class="toggle-slider"></span></label>
-      </div>
     </div>
   </div>
 
@@ -294,7 +287,6 @@
   let kitRGBon = false;
   let kitHue   = 0;
   let hueThrottle = null;
-  let pirActive = false;
   let camPersonOn = false;
   let client, ready = false;
   let ignoreStatusUntil = 0;
@@ -342,7 +334,6 @@
 
   function onHueInput(val) {
     kitHue = parseInt(val);
-    // Якщо тоггл вимкнений — вмикаємо автоматично
     if(!kitRGBon) {
       kitRGBon = true;
       localAction();
@@ -446,18 +437,6 @@
         addLog('📷 Камера: людини немає → лампа може вимкнутись','warn');
       },5000);
     }
-  }
-
-  function togglePIR(enabled){
-    pub(BASE+'/garage/pir_enable', enabled?'ON':'OFF');
-    addLog('PIR: '+(enabled?'увімкнено':'вимкнено'),'ok');
-  }
-
-  function updatePirBadge(motion){
-    pirActive=motion;
-    const badge=document.getElementById('pir-badge');
-    if(badge){ badge.textContent=motion?'PIR: рух!':'PIR: тихо'; badge.style.color=motion?'var(--accent)':'var(--muted)'; }
-    if(motion){ localAction(); sw['garage-0']=true; syncDevUI('garage','0'); updateBulb(); }
   }
 
   // ── MQTT pub ──────────────────────────────────────────────
@@ -567,8 +546,6 @@
   }
 
   // ── Статус від ESP ────────────────────────────────────────
-  // ФІКС: читаємо kitchen_neo окремо від кольору,
-  //       а kitchen_r/g/b тепер числа (не буліани)
   function applyStatus(json){
     if(Date.now()<ignoreStatusUntil)return;
     try{
@@ -578,15 +555,12 @@
       sw['garage-0']=!!d.garage_0; sw['garage-1']=!!d.garage_1;
       sw['wardrobe-0']=!!d.wardrobe_0; sw['wardrobe-1']=!!d.wardrobe_1;
 
-      // Якщо ESP надсилає нове поле kitchen_neo — використовуємо його
-      // Якщо ні (стара прошивка) — fallback на старі поля
       if(d.kitchen_neo !== undefined){
         kitRGBon = !!d.kitchen_neo;
       } else {
         kitRGBon = !!(d.kitchen_r || d.kitchen_g || d.kitchen_b);
       }
 
-      // Відновлюємо hue
       if(d.kitchen_r !== undefined){
         const rVal = typeof d.kitchen_r === 'boolean' ? (d.kitchen_r?255:0) : Number(d.kitchen_r);
         const gVal = typeof d.kitchen_g === 'boolean' ? (d.kitchen_g?255:0) : Number(d.kitchen_g);
@@ -600,10 +574,6 @@
       }
       syncAllUI();
     }catch(e){ console.error('applyStatus:', e); }
-  }
-
-  function applyPirStatus(json){
-    try{ const d=JSON.parse(json); if(d.motion!==undefined) updatePirBadge(!!d.motion); }catch(e){}
   }
 
   // ── Tabs ──────────────────────────────────────────────────
@@ -640,14 +610,12 @@
     document.getElementById('btn-all-off').disabled=false;
     document.getElementById('state-sub').textContent='все вимкнено';
     client.subscribe(TOPIC_STATUS);
-    client.subscribe(BASE+'/garage/pir');
     updateHueUI(kitHue);
   });
 
   client.on('message',(topic,payload)=>{
     const msg=payload.toString();
     if(topic===TOPIC_STATUS) applyStatus(msg);
-    else if(topic===BASE+'/garage/pir') applyPirStatus(msg);
   });
 
   client.on('error',err=>{ setConn('error','помилка'); addLog('Помилка: '+err.message,'err'); });
