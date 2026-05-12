@@ -460,11 +460,13 @@
       if(!camPersonOn){
         camPersonOn=true;
         card.classList.add('detecting');
+        // Вмикаємо лампу: і через camera-топік (для ESP логіки), і напряму garage/0
         pub(TOPIC_CAM,'ON');
-        localAction();
+        pub(BASE+'/garage/0','ON');
         sw['garage-0']=true;
         syncDevUI('garage','0');
         updateBulb();
+        localAction();
         addLog('📷 Камера: людина виявлена → лампа ON','ok');
       }
     } else {
@@ -474,13 +476,15 @@
         personDetectTimeout = setTimeout(()=>{
           camPersonOn=false;
           personDetectTimeout=null;
+          // Вимикаємо лампу: і camera OFF, і напряму garage/0 OFF
           pub(TOPIC_CAM,'OFF');
+          pub(BASE+'/garage/0','OFF');
           sw['garage-0']=false;
           syncDevUI('garage','0');
           updateBulb();
           localAction();
           addLog('📷 Камера: людини немає 10с → лампа OFF','warn');
-        }, 10000); // 10 секунд
+        }, 10000);
         addLog('📷 Камера: людини не видно, очікування 10с...','warn');
       }
     }
