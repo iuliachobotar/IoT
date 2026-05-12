@@ -104,11 +104,11 @@
     .cam-video-wrap { position: relative; border-radius: 10px; overflow: hidden; background: #0d0d13; margin-bottom: 0.75rem; aspect-ratio: 4/3; display: none; }
     .cam-video-wrap.visible { display: block; }
     .cam-video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1); }
-    .cam-video-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; transform: scaleX(-1); }
+    /* canvas НЕ відзеркалений — координати вже виправлені в JS */
+    .cam-video-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
     .cam-person-overlay { position: absolute; inset: 0; border: 3px solid var(--green); border-radius: 10px; opacity: 0; transition: opacity .3s; pointer-events: none; }
     .camera-card.detecting .cam-person-overlay { opacity: 1; }
-    .cam-person-label { position: absolute; top: 8px; left: 8px; background: var(--green); color: #000; font-family: var(--mono); font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; opacity: 0; transition: opacity .3s; }
-    .camera-card.detecting .cam-person-label { opacity: 1; }
+    /* лейбл прибрано — відсоток показується тільки на canvas */
     .cam-info { font-family: var(--mono); font-size: 10px; color: var(--muted); margin-bottom: 0.75rem; line-height: 1.5; }
     .cam-info span { color: var(--text); }
     .btn-camera { width: 100%; padding: 11px; font-family: var(--display); font-size: 13px; font-weight: 700; border-radius: 12px; border: 1px solid rgba(29,189,138,.3); background: rgba(29,189,138,.08); color: var(--green); cursor: pointer; transition: all .15s; }
@@ -229,7 +229,7 @@
       </div>
     </div>
 
-    <!-- КАМЕРА -->
+    <!-- КАМЕРА — лейбл з відсотком видалено, залишається тільки canvas -->
     <div class="camera-card" id="camera-card">
       <div class="camera-header">
         <div class="camera-title"><span class="cam-status-dot"></span>📷 Камера</div>
@@ -238,7 +238,7 @@
         <video id="cam-video" autoplay muted playsinline></video>
         <canvas id="cam-canvas"></canvas>
         <div class="cam-person-overlay"></div>
-        <div class="cam-person-label" id="cam-label">👤 Людина</div>
+        <!-- лейбл прибрано -->
       </div>
       <div class="cam-info" id="cam-info">
         Камера вимкнена.<br>Увімкни щоб <span>автоматично керувати лампою</span> при виявленні людини.
@@ -391,6 +391,7 @@
   function stopCamera(){
     if(camStream) camStream.getTracks().forEach(t=>t.stop());
     clearInterval(detectLoop);
+    clearTimeout(personDetectTimeout);
     camRunning=false; camStream=null;
     document.getElementById('cam-wrap').classList.remove('visible');
     document.getElementById('camera-card').classList.remove('active','detecting');
@@ -405,37 +406,83 @@
     if(!tfModel||!camRunning) return;
     const video=document.getElementById('cam-video');
     if(video.readyState<2) return;
+
     const canvas=document.getElementById('cam-canvas');
-    canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+    const vw=video.videoWidth, vh=video.videoHeight;
+    canvas.width=vw; canvas.height=vh;
     const ctx=canvas.getContext('2d');
-    ctx.drawImage(video,0,0);
-    const predictions = await tfModel.detect(video);
+
+    // Малюємо відзеркалений кадр на canvas (щоб bbox збігався з відображенням)
+    ctx.save();
+    ctx.translate(vw, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0);
+    ctx.restore();
+
+    const predictions = await tfModel.detect(canvas); // детектуємо на вже відзеркаленому canvas
+    ctx.clearRect(0,0,vw,vh);
+
+    // Перемальовуємо відзеркалений відеокадр як фон (canvas не трансформується в CSS)
+    ctx.save();
+    ctx.translate(vw, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0);
+    ctx.restore();
+
     const persons = predictions.filter(p=>p.class==='person'&&p.score>0.55);
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+
     persons.forEach(p=>{
       const [x,y,w,h]=p.bbox;
-      const mx=canvas.width-x-w;
-      ctx.strokeStyle='#1dbd8a'; ctx.lineWidth=2;
-      ctx.strokeRect(mx,y,w,h);
-      ctx.fillStyle='rgba(29,189,138,0.15)'; ctx.fillRect(mx,y,w,h);
-      ctx.fillStyle='#1dbd8a'; ctx.font='bold 12px monospace';
-      ctx.fillText(`👤 ${Math.round(p.score*100)}%`,mx+4,y+16);
+      // bbox вже відповідає відзеркаленому зображенню — малюємо напряму
+      ctx.strokeStyle='#1dbd8a';
+      ctx.lineWidth=2;
+      // Тільки рамка, без заливки
+      ctx.strokeRect(x, y, w, h);
+
+      // Відсоток — один раз, тільки тут
+      ctx.fillStyle='rgba(29,189,138,0.9)';
+      ctx.font='bold 12px monospace';
+      const label = `👤 ${Math.round(p.score*100)}%`;
+      const textW = ctx.measureText(label).width;
+      ctx.fillRect(x+2, y+2, textW+8, 18);
+      ctx.fillStyle='#000';
+      ctx.fillText(label, x+6, y+15);
     });
+
     const hasPerson=persons.length>0;
     const card=document.getElementById('camera-card');
-    if(hasPerson&&!camPersonOn){
-      camPersonOn=true; card.classList.add('detecting');
-      document.getElementById('cam-label').textContent='👤 Людина '+Math.round(persons[0].score*100)+'%';
-      pub(TOPIC_CAM,'ON'); localAction();
-      sw['garage-0']=true; syncDevUI('garage','0'); updateBulb();
-      addLog('📷 Камера: людина виявлена → лампа ON','ok');
-    } else if(!hasPerson&&camPersonOn){
+
+    if(hasPerson){
+      // Якщо людина з'явилась — скасувати таймер вимкнення
       clearTimeout(personDetectTimeout);
-      personDetectTimeout=setTimeout(()=>{
-        camPersonOn=false; card.classList.remove('detecting');
-        pub(TOPIC_CAM,'OFF');
-        addLog('📷 Камера: людини немає → лампа може вимкнутись','warn');
-      },5000);
+      personDetectTimeout=null;
+
+      if(!camPersonOn){
+        camPersonOn=true;
+        card.classList.add('detecting');
+        pub(TOPIC_CAM,'ON');
+        localAction();
+        sw['garage-0']=true;
+        syncDevUI('garage','0');
+        updateBulb();
+        addLog('📷 Камера: людина виявлена → лампа ON','ok');
+      }
+    } else {
+      // Людини немає — запустити таймер тільки якщо ще не запущений
+      if(camPersonOn && !personDetectTimeout){
+        card.classList.remove('detecting');
+        personDetectTimeout = setTimeout(()=>{
+          camPersonOn=false;
+          personDetectTimeout=null;
+          pub(TOPIC_CAM,'OFF');
+          sw['garage-0']=false;
+          syncDevUI('garage','0');
+          updateBulb();
+          localAction();
+          addLog('📷 Камера: людини немає 10с → лампа OFF','warn');
+        }, 10000); // 10 секунд
+        addLog('📷 Камера: людини не видно, очікування 10с...','warn');
+      }
     }
   }
 
